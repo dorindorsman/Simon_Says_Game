@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1098401120433",
+    "project_id": "simon-says-memory-game-90d76",
+    "storage_bucket": "simon-says-memory-game-90d76.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098401120433:android:f2bd9225c996ec7007e290",
+        "android_client_info": {
+          "package_name": "com.dorin.simonsaysgame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1098401120433-sbojrnntopl73bro5r10ehfa1nno832j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_im1HN-KP0FG0ybGn2JDeOclsFmwVEgI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1098401120433-sbojrnntopl73bro5r10ehfa1nno832j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
