@@ -29,10 +29,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.menu.settings.FloatingActionButtonMenu
 import com.dorin.simonsaysgame.menu.settings.settings_menu.floatingActionMenuOptions
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.io.InputStream
@@ -49,7 +53,7 @@ fun MenuScreen(
             .background(Color.Black)
             .fillMaxSize()
     ) {
-        val (title, menuContent, settingsButton) = createRefs()
+        val (title, menuContent, settingsButton, ads) = createRefs()
 
         Text(
             modifier = Modifier
@@ -59,7 +63,8 @@ fun MenuScreen(
                         end = parent.end
                     )
                     top.linkTo(parent.top, 40.dp)
-                }.fillMaxWidth(),
+                }
+                .fillMaxWidth(),
             text =
             buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color(0xFF2196F3))) {
@@ -110,8 +115,6 @@ fun MenuScreen(
             textAlign = TextAlign.Center
         )
 
-
-        
         MenuContent(
             viewModel = viewModel, modifier = Modifier.constrainAs(menuContent) {
                 linkTo(
@@ -121,16 +124,22 @@ fun MenuScreen(
                 top.linkTo(title.top, 170.dp)
             }, navigateToPanelGame
         )
+
         SettingsButton(viewModel = viewModel, modifier = Modifier
             .constrainAs(settingsButton) {
                 end.linkTo(parent.end, 15.dp)
-                bottom.linkTo(parent.bottom, 15.dp)
+                bottom.linkTo(ads.top, 15.dp)
             })
 
+        BannersAds(modifier = Modifier.constrainAs(ads) {
+            linkTo(
+                start = parent.start,
+                end = parent.end
+            )
+            bottom.linkTo(parent.bottom)
+        })
     }
 
-
-    //navigateToPanelGame()
 
 }
 
@@ -285,6 +294,59 @@ fun SettingsButton(viewModel: MenuViewModel, modifier: Modifier) {
         }
     )
 
+}
+
+
+
+
+@Composable
+fun BannersAds(modifier: Modifier) {
+    // on below line creating a variable for location.
+    // on below line creating a column for our maps.
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.Black)
+    ) {
+        // on below line we are adding a spacer.
+//        Spacer(modifier = modifier.height(20.dp))
+        // on below line we are adding a text
+//        Text(
+//            // on below line specifying text for heading.
+//            text = "Google Admob Banner Ads in Android",
+//            // adding text alignment,
+//            textAlign = TextAlign.Center,
+//            // on below line adding text color.
+//            color = Color.Gray,
+//            // on below line adding font weight.
+//            fontWeight = FontWeight.Bold,
+//            // on below line adding padding from all sides.
+//            modifier = modifier
+//                .padding(10.dp)
+//                .fillMaxWidth()
+//        )
+
+        // on below line adding a spacer.
+        Spacer(modifier = modifier.height(30.dp))
+
+        // on below line adding admob banner ads.
+        AndroidView(
+            // on below line specifying width for ads.
+            modifier = modifier.fillMaxWidth(),
+            factory = { context ->
+                // on below line specifying ad view.
+                AdView(context).apply {
+                    // on below line specifying ad size
+                    this.setAdSize(AdSize.BANNER)
+                    // on below line specifying ad unit id
+                    // currently added a test ad unit id.
+                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                    // calling load ad to load our ad.
+                    loadAd(AdRequest.Builder().build())
+                }
+            }
+        )
+    }
 }
 
 
