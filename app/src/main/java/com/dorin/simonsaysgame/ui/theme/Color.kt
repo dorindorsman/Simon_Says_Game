@@ -24,14 +24,13 @@ val TextWhite = Color(0xffeeeeee)
 val DeepBlue = Color(0xff06164c)
 val ButtonBlue = Color(0xff505cf3)
 val DarkerButtonBlue = Color(0xff566894)
-val LightBlue = Color(0xFF2196F3)
 val LightRed = Color(0xfffc879a)
-val Red = Color(0xFFFF0000)
 val AquaBlue = Color(0xff9aa5c4)
 val OrangeYellow1 = Color(0xfff0bd28)
 val OrangeYellow2 = Color(0xfff1c746)
 val OrangeYellow3 = Color(0xfff4cf65)
 val OrangeYellow4 = Color(0xFFFFFF00)
+val OrangeYellow5 = Color(0xFFFFFF51)
 val Beige1 = Color(0xfffdbda1)
 val Beige2 = Color(0xfffcaf90)
 val Beige3 = Color(0xfff9a27b)
@@ -43,6 +42,23 @@ val BlueViolet1 = Color(0xffaeb4fd)
 val BlueViolet2 = Color(0xff9fa5fe)
 val BlueViolet3 = Color(0xff8f98fd)
 
-val Colors.splashScreenBackground: Color
+
+/*** Simon Says Colors ***/
+val Green = Color(0xFF00FF00)
+val PressedGreen = Color(0x4F00FF00)
+val Red = Color(0xFFFF0000)
+val PressedRed = Color(0x5EFF0000)
+val Yellow = Color(0xFFFFFF00)
+val PressedYellow = Color(0x85FFFF00)
+val LightBrightBlue = Color(0xFF2196F3)
+val PressedLightBrightBlue = Color(0x7C2196F3)
+
+val btnColors = listOf<Color>(Green,PressedGreen,Red,PressedRed,Yellow,PressedYellow,LightBrightBlue,PressedLightBrightBlue)
+
+
+val Colors.SplashScreenBackground: Color
     @Composable
     get() = if (isLight) Black else Black
+
+
+

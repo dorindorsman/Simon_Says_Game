@@ -1,5 +1,7 @@
 package com.dorin.simonsaysgame
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -11,6 +13,7 @@ import com.dorin.simonsaysgame.destination.menuComposable
 import com.dorin.simonsaysgame.destination.panelGameComposable
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 @Composable
 fun Navigation(
@@ -25,13 +28,13 @@ fun Navigation(
         startDestination = SPLASH_SCREEN
     ) {
         splashComposable(
-            navigateToMenuScreen = screen.splash
+            navigateToMenuScreen = screen.toMain
         )
         menuComposable(
-            navigateToPanelGame = screen.menu
+            navigateToPanelGame = screen.toGame
         )
         panelGameComposable(
-            //navigateToPanelGame = screen
+            navigateToMenuScreen = screen.toMain
         )
     }
 }

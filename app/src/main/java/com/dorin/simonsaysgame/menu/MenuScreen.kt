@@ -2,7 +2,6 @@ package com.dorin.simonsaysgame.menu
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.graphics.Paint.Style
 import android.os.Build
 import android.text.Html
 import android.text.method.LinkMovementMethod
@@ -18,7 +17,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,14 +27,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
+import com.dorin.simonsaysgame.ads.BannersAds
+import com.dorin.simonsaysgame.ads.RewardedAdsLoading
+import com.dorin.simonsaysgame.ads.RewardedAdsShow
 import com.dorin.simonsaysgame.menu.settings.FloatingActionButtonMenu
 import com.dorin.simonsaysgame.menu.settings.settings_menu.floatingActionMenuOptions
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
+import com.dorin.simonsaysgame.ui.theme.*
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.io.InputStream
@@ -55,65 +53,15 @@ fun MenuScreen(
     ) {
         val (title, menuContent, settingsButton, ads) = createRefs()
 
-        Text(
-            modifier = Modifier
-                .constrainAs(title) {
-                    linkTo(
-                        start = parent.start,
-                        end = parent.end
-                    )
-                    top.linkTo(parent.top, 40.dp)
-                }
-                .fillMaxWidth(),
-            text =
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(color = Color(0xFF2196F3))) {
-                    append("S")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Red)) {
-                    append("I")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Yellow)) {
-                    append("M")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Green)) {
-                    append("O")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color(0xFF2196F3))) {
-                    append("N")
-                }
-                append(" ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Red)) {
-                    append("S")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Yellow)) {
-                    append("A")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Green)) {
-                    append("Y")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color(0xFF2196F3))) {
-                    append("S")
-                }
-                append(" ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Red)) {
-                    append("G")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Yellow)) {
-                    append("A")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Green)) {
-                    append("M")
-                }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color(0xFF2196F3))) {
-                    append("E")
-                }
-            },
-            fontSize = 40.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
+        TitleText(Modifier
+            .constrainAs(title) {
+                linkTo(
+                    start = parent.start,
+                    end = parent.end
+                )
+                top.linkTo(parent.top, 20.dp)
+            }
+            .fillMaxWidth())
 
         MenuContent(
             viewModel = viewModel, modifier = Modifier.constrainAs(menuContent) {
@@ -121,7 +69,7 @@ fun MenuScreen(
                     start = parent.start,
                     end = parent.end
                 )
-                top.linkTo(title.top, 170.dp)
+                top.linkTo(title.top, 180.dp)
             }, navigateToPanelGame
         )
 
@@ -131,6 +79,8 @@ fun MenuScreen(
                 bottom.linkTo(ads.top, 15.dp)
             })
 
+
+
         BannersAds(modifier = Modifier.constrainAs(ads) {
             linkTo(
                 start = parent.start,
@@ -138,13 +88,80 @@ fun MenuScreen(
             )
             bottom.linkTo(parent.bottom)
         })
+
     }
+}
 
 
+@Composable
+fun TitleText(modifier: Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            modifier = modifier,
+            text =
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(color = LightBrightBlue)) {
+                    append("S")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Red)) {
+                    append("I")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Yellow)) {
+                    append("M")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Green)) {
+                    append("O")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = LightBrightBlue)) {
+                    append("N")
+                }
+                append(" ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Red)) {
+                    append("S")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Yellow)) {
+                    append("A")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Green)) {
+                    append("Y")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = LightBrightBlue)) {
+                    append("S")
+                }
+            },
+            fontSize = 60.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            modifier = modifier,
+            text =
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Red)) {
+                    append("G")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Yellow)) {
+                    append("A")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Green)) {
+                    append("M")
+                }
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = LightBrightBlue)) {
+                    append("E")
+                }
+            },
+            fontSize = 60.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 @Composable
 fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGame: () -> Unit) {
+
     Column(modifier = modifier) {
 
         ExtendedFloatingActionButton(
@@ -180,7 +197,6 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
             },
             shape = MaterialTheme.shapes.small
         )
-
 
         ExtendedFloatingActionButton(
             modifier = modifier
@@ -297,57 +313,6 @@ fun SettingsButton(viewModel: MenuViewModel, modifier: Modifier) {
 }
 
 
-
-
-@Composable
-fun BannersAds(modifier: Modifier) {
-    // on below line creating a variable for location.
-    // on below line creating a column for our maps.
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-    ) {
-        // on below line we are adding a spacer.
-//        Spacer(modifier = modifier.height(20.dp))
-        // on below line we are adding a text
-//        Text(
-//            // on below line specifying text for heading.
-//            text = "Google Admob Banner Ads in Android",
-//            // adding text alignment,
-//            textAlign = TextAlign.Center,
-//            // on below line adding text color.
-//            color = Color.Gray,
-//            // on below line adding font weight.
-//            fontWeight = FontWeight.Bold,
-//            // on below line adding padding from all sides.
-//            modifier = modifier
-//                .padding(10.dp)
-//                .fillMaxWidth()
-//        )
-
-        // on below line adding a spacer.
-        Spacer(modifier = modifier.height(30.dp))
-
-        // on below line adding admob banner ads.
-        AndroidView(
-            // on below line specifying width for ads.
-            modifier = modifier.fillMaxWidth(),
-            factory = { context ->
-                // on below line specifying ad view.
-                AdView(context).apply {
-                    // on below line specifying ad size
-                    this.setAdSize(AdSize.BANNER)
-                    // on below line specifying ad unit id
-                    // currently added a test ad unit id.
-                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                    // calling load ad to load our ad.
-                    loadAd(AdRequest.Builder().build())
-                }
-            }
-        )
-    }
-}
 
 
 @Preview

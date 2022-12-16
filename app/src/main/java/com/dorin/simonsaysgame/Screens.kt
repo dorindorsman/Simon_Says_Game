@@ -10,7 +10,7 @@ class Screens(navController: NavController) {
         const val PANEL_GAME_SCREEN = "panel_game"
     }
 
-    val splash: () -> Unit = {
+    val toMain: () -> Unit = {
         navController.navigate(route = MENU_SCREEN) {
             popUpTo(SPLASH_SCREEN) {
                 inclusive = true
@@ -18,13 +18,10 @@ class Screens(navController: NavController) {
         }
     }
 
-    val menu: () -> Unit = {
+    val toGame: () -> Unit = {
         navController.navigate(route = PANEL_GAME_SCREEN)
     }
 
-    val panelGame: () -> Unit = {
-        navController.navigate(route = PANEL_GAME_SCREEN)
-    }
 
 
 //

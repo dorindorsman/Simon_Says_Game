@@ -1,17 +1,21 @@
 package com.dorin.simonsaysgame.destination
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.dorin.simonsaysgame.Screens
 import com.dorin.simonsaysgame.gamePanel.PanelGameScreen
-import com.dorin.simonsaysgame.menu.MenuScreen
+import com.dorin.simonsaysgame.gamePanel.PanelGameScreenViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 fun NavGraphBuilder.panelGameComposable(
-    //navigateToPanelGame: () -> Unit
+    navigateToMenuScreen: () -> Unit
 ) {
     composable(
         route = Screens.PANEL_GAME_SCREEN,
@@ -25,7 +29,8 @@ fun NavGraphBuilder.panelGameComposable(
         }
     ) {
         PanelGameScreen(
-            //navigateToPanelGame = navigateToPanelGame
+            navigateToMenuScreen = navigateToMenuScreen,
+            viewModel = viewModel() as PanelGameScreenViewModel
         )
     }
 }

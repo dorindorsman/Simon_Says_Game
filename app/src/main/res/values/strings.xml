@@ -7,4 +7,8 @@
     <string name="easy">Easy</string>
     <string name="medium">Medium</string>
     <string name="hard">Hard</string>
+    <string name="play">PLAY GAME</string>
+    <string name="retry">Retry?</string>
+    <string name="back_to_game_menu">Back to game menu</string>
+    <string name="game_completed">Game Completed</string>
 </resources>
