@@ -1,9 +1,11 @@
 package com.dorin.simonsaysgame.gamePanel
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.os.Build
 import android.view.MotionEvent
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
@@ -48,14 +51,10 @@ fun PanelGameScreen(
 ) {
 
     //Define Needed Variables
-
     val viewState = viewModel.viewState
 
     //Start Button Used To Begin Game
     SimonSaysGameBoard(viewState, viewModel, navigateToMenuScreen)
-
-
-    //navigateToPanelGame()
 
 }
 
@@ -66,6 +65,8 @@ fun SimonSaysGameBoard(
     viewModel: PanelGameScreenViewModel,
     navigateToMenuScreen: () -> Unit
 ) {
+    val context = LocalContext.current
+
     ConstraintLayout(
         modifier = Modifier
             .background(Color.Black)
@@ -117,7 +118,8 @@ fun SimonSaysGameBoard(
                 shape = GameShapeTopLeft.small as RoundedCornerShape,
                 index = 0,
                 viewState = viewState,
-                viewModel = viewModel
+                viewModel = viewModel,
+                context = context
             )
 
             SimonSaysButton(
@@ -125,7 +127,8 @@ fun SimonSaysGameBoard(
                 shape = GameShapeTopRight.small as RoundedCornerShape,
                 index = 1,
                 viewState = viewState,
-                viewModel = viewModel
+                viewModel = viewModel,
+                context = context
             )
 
         }
@@ -146,7 +149,8 @@ fun SimonSaysGameBoard(
                 shape = GameShapeBottomLeft.small as RoundedCornerShape,
                 index = 2,
                 viewState = viewState,
-                viewModel = viewModel
+                viewModel = viewModel,
+                context = context
             )
 
             SimonSaysButton(
@@ -154,24 +158,33 @@ fun SimonSaysGameBoard(
                 shape = GameShapeBottomRight.small as RoundedCornerShape,
                 index = 3,
                 viewState = viewState,
-                viewModel = viewModel
+                viewModel = viewModel,
+                context = context
             )
         }
 
-        FloatingActionButton(modifier = Modifier
-            .wrapContentSize()
-            .constrainAs(circle) {
-                linkTo(
-                    start = parent.start,
-                    end = parent.end,
-                    top = btnTop.top,
-                    bottom = btnBottom.bottom
-                )
-            }
-            .size(100.dp),
-            shape = RoundedCornerShape(150.dp), onClick = {}, content = {},
-            backgroundColor = Color.Black
-        )
+        FloatingActionButton(
+            modifier = Modifier
+                .wrapContentSize()
+                .constrainAs(circle) {
+                    linkTo(
+                        start = parent.start,
+                        end = parent.end,
+                        top = btnTop.top,
+                        bottom = btnBottom.bottom
+                    )
+                }
+                .size(100.dp),
+            shape = RoundedCornerShape(150.dp), onClick = {},
+            backgroundColor = Color.Black,
+        ) {
+            Text(
+                text = stringResource(id = R.string.simon),
+                fontSize = 20.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         BannersAds(modifier = Modifier.constrainAs(ads) {
             linkTo(
@@ -183,10 +196,10 @@ fun SimonSaysGameBoard(
 
 
         if (viewState.attemptsLeft == 0) {
-            RewardedAdsLoading(LocalContext.current, viewModel)
+            RewardedAdsLoading(context, viewModel)
             if (viewModel.rewardedAdsLoadingState) {
-                RewardedAdsShow(LocalContext.current, viewModel)
-                AlertDialogScreen(viewState, viewModel, navigateToMenuScreen)
+                RewardedAdsShow(context, viewModel)
+                AlertDialogScreen(context, viewState, viewModel, navigateToMenuScreen)
             }
         }
 
@@ -196,11 +209,11 @@ fun SimonSaysGameBoard(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertDialogScreen(
+    context: Context,
     viewState: PanelGameScreenViewModel.ViewState,
     viewModel: PanelGameScreenViewModel,
     navigateToMenuScreen: () -> Unit
 ) {
-    val context = LocalContext.current
     AlertDialog(onDismissRequest = {},
         title = { Text(stringResource(id = R.string.game_completed)) },
         text = { Text("Your Score: ${viewState.score}") },
@@ -279,33 +292,61 @@ fun SimonSaysButton(
     shape: RoundedCornerShape,
     index: Int,
     viewState: PanelGameScreenViewModel.ViewState,
-    viewModel: PanelGameScreenViewModel
+    viewModel: PanelGameScreenViewModel,
+    context: Context
 ) {
+
+
+    //Animation Variables
+    val selected = remember { mutableStateOf(false) }
+    val scale = animateFloatAsState(if (selected.value) 0.9f else 1f)
+
+
+    //Logic Variables
     val pt = viewState.playerTurn
     var btnColorState = remember { mutableStateOf(color) }
+
+    //Sounds Variable
+    var buttonSound = when (color) {
+        Green -> R.raw.green
+        Red -> R.raw.red
+        Yellow -> R.raw.yellow
+        LightBrightBlue -> R.raw.blue
+        else -> {
+            R.raw.error
+        }
+    }
 
     if (viewState.btnStates[index] == 1) {
         btnColorState = remember { mutableStateOf(pressColor) }
     } else if (viewState.btnStates[index] == 2) {
-        btnColorState = remember { mutableStateOf(Red) }
+        btnColorState = remember { mutableStateOf(correct) }
+        buttonSound = R.raw.victory
+    } else if (viewState.btnStates[index] == 3) {
+        btnColorState = remember { mutableStateOf(inCorrect) }
+        buttonSound = R.raw.error
     }
-
+    val mediaPlayer = MediaPlayer.create(context, buttonSound)
 
     Button(
-        onClick = {},
+        onClick = {
+        },
         shape = shape,
         modifier = Modifier
             .padding(5.dp)
             .size(150.dp)
+            .scale(scale.value)
             .pointerInteropFilter {
                 when (it.action) {
                     MotionEvent.ACTION_DOWN -> {
                         if (pt) {
+                            selected.value = true
                             btnColorState.value = pressColor
                         }
                     }
                     MotionEvent.ACTION_UP -> {
                         if (pt) {
+                            selected.value = false
                             btnColorState.value = color
                             viewModel.receiveInput(index)
                         }
@@ -315,8 +356,11 @@ fun SimonSaysButton(
             },
         colors = ButtonDefaults.buttonColors(containerColor = btnColorState.value)
     ) {
-
+        if(btnColorState.value == pressColor || viewState.btnStates[index] == 2 || viewState.btnStates[index] == 3){
+            mediaPlayer.start()
+        }
     }
+
 }
 
 

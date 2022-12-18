@@ -44,6 +44,8 @@ val BlueViolet3 = Color(0xff8f98fd)
 
 
 /*** Simon Says Colors ***/
+val correct = Color(0xFF007900)
+val inCorrect = Color(0xFF7C0000)
 val Green = Color(0xFF00FF00)
 val PressedGreen = Color(0x4F00FF00)
 val Red = Color(0xFFFF0000)

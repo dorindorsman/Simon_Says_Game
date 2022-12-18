@@ -6,11 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dorin.simonsaysgame.menu.MenuEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlin.random.Random
 
 
@@ -27,29 +23,35 @@ class PanelGameScreenViewModel : ViewModel() {
     }
 
 
-    fun handleEvent(event: PanelGameEvent){
+    fun handleEvent(event: PanelGameEvent) {
         Log.d(TAG, "game event: $event")
 
-        when(event){
+        when (event) {
             is PanelGameEvent.SetRewardedAdsLoadingState -> rewardedAdsLoadingState = event.boolean
         }
     }
 
     // current sequence
-    // each list item is within [0,8] corresponding to each square
+    // each list item is within [0,3] corresponding to each square
     private val sequence: MutableList<Int> = mutableListOf()
 
     // current position in sequence
     private var sequenceIndex: Int = 0
 
     // Public game state
-    data class ViewState (
+    data class ViewState(
         // color state for squares
         // 0 - default (color)
         // 1 - correct (green)
         // 2 - incorrect (red)
+
+
+        // 0 - default (color)
+        // 1 - press (press)
+        // 2 - correct (green)
+        // 3 - incorrect (red)
         // have only one non-zero color state at one time ?
-        val btnStates: List<Int> =  List(4) { 0 },
+        val btnStates: List<Int> = List(4) { 0 },
 
         // current level
         val score: Int = 0,
@@ -73,22 +75,22 @@ class PanelGameScreenViewModel : ViewModel() {
     }
 
     // extends the current sequence with a randomly generated integer
-    private fun extendSequence(){
+    private fun extendSequence() {
         sequence.add(Random.nextInt(0, 3))
     }
 
     // toggles on square with given id to the specified state
     // toggles off all other squares
     // e.g. id = 3, state = 1 -> [0,0,0,1,0,0,0...]
-    private fun toggleSquare(id: Int, state: Int): List<Int> {
-        val buttons = MutableList(4){0}
+    private fun toggleButton(id: Int, state: Int): List<Int> {
+        val buttons = MutableList(4) { 0 }
         buttons[id] = state
         return buttons.toList()
     }
 
     // toggles the entire board to the specified state
     private fun toggleBoard(state: Int): List<Int> {
-        return List(4) {state}
+        return List(4) { state }
     }
 
     // start new round with sequence complete indicator
@@ -103,17 +105,17 @@ class PanelGameScreenViewModel : ViewModel() {
                 )
 
                 // sequence complete indicator
-                emit(
-                    viewState.copy(
-                        btnStates = toggleBoard(1)
-                    )
-                )
-                delay(500)
+//                emit(
+//                    viewState.copy(
+//                        btnStates = toggleBoard(1)
+//                    )
+//                )
                 emit(
                     viewState.copy(
                         btnStates = toggleBoard(0)
                     )
                 )
+                delay(500)
 
                 // start the new round
                 startRound()
@@ -135,7 +137,7 @@ class PanelGameScreenViewModel : ViewModel() {
                 // incorrect input indicator
                 emit(
                     viewState.copy(
-                        btnStates = toggleBoard(2)
+                        btnStates = toggleBoard(3)
                     )
                 )
                 delay(500)
@@ -151,13 +153,13 @@ class PanelGameScreenViewModel : ViewModel() {
                     delay(500)
                     emit(
                         viewState.copy(
-                            btnStates = toggleSquare(s, 1)
+                            btnStates = toggleButton(s, 1)
                         )
                     )
                     delay(500)
                     emit(
                         viewState.copy(
-                            btnStates = toggleSquare(s, 0)
+                            btnStates = toggleButton(s, 0)
                         )
                     )
                 }
@@ -195,13 +197,13 @@ class PanelGameScreenViewModel : ViewModel() {
                     delay(500)
                     emit(
                         viewState.copy(
-                            btnStates = toggleSquare(s, 1)
+                            btnStates = toggleButton(s, 1)
                         )
                     )
                     delay(500)
                     emit(
                         viewState.copy(
-                            btnStates = toggleSquare(s, 0)
+                            btnStates = toggleButton(s, 0)
                         )
                     )
                 }
@@ -218,39 +220,47 @@ class PanelGameScreenViewModel : ViewModel() {
 
     // indicates input from button with specified id
     fun receiveInput(id: Int) {
-        if (viewState.playerTurn) {
-            if (id == sequence[sequenceIndex]) {
-                // correct input
-                if (sequenceIndex == sequence.size - 1) {
-                    // end of sequence
-                    emit(
-                        viewState.copy(
-                            score = viewState.score + 1
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                if (viewState.playerTurn) {
+                    if (id == sequence[sequenceIndex]) {
+                        // correct input
+                        if (sequenceIndex == sequence.size - 1) {
+                            // end of sequence
+                            emit(
+                                viewState.copy(
+                                    score = viewState.score + 1,
+                                    btnStates = toggleBoard(2)
+                                )
+                            )
+                            delay(3000)
+                            newRound()
+                        } else {
+                            // advance sequence
+                            sequenceIndex += 1
+                        }
+                    } else {
+                        // incorrect input
+                        sequenceIndex = 0
+                        emit(
+                            viewState.copy(
+                                attemptsLeft = viewState.attemptsLeft - 1,
+                                btnStates = toggleBoard(3)
+                            )
                         )
-                    )
-                    newRound()
-                } else {
-                    // advance sequence
-                    sequenceIndex += 1
-                }
-            } else {
-                // incorrect input
-                sequenceIndex = 0
-                emit(
-                    viewState.copy(
-                        attemptsLeft = viewState.attemptsLeft - 1
-                    )
-                )
-                if (viewState.attemptsLeft != 0) {
-                    replaySequence()
-                } else {
-                    // game over
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleBoard(2),
-                            playerTurn = false
-                        )
-                    )
+                        if (viewState.attemptsLeft != 0) {
+                            replaySequence()
+                        } else {
+                            // game over
+                            emit(
+                                viewState.copy(
+                                    btnStates = toggleBoard(3),
+                                    playerTurn = false
+                                )
+                            )
+                        }
+                        delay(3000)
+                    }
                 }
             }
         }
