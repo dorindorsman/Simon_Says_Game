@@ -9,13 +9,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.dorin.simonsaysgame.Screens
-import com.dorin.simonsaysgame.gamePanel.PanelGameScreen
-import com.dorin.simonsaysgame.gamePanel.PanelGameScreenViewModel
+import com.dorin.simonsaysgame.gamepanel.PanelGameScreen
+import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 fun NavGraphBuilder.panelGameComposable(
-    navigateToMenuScreen: () -> Unit
+    navigateToMenuScreen: () -> Unit,
+    panelGameViewModel : PanelGameViewModel
 ) {
     composable(
         route = Screens.PANEL_GAME_SCREEN,
@@ -30,7 +31,7 @@ fun NavGraphBuilder.panelGameComposable(
     ) {
         PanelGameScreen(
             navigateToMenuScreen = navigateToMenuScreen,
-            viewModel = viewModel() as PanelGameScreenViewModel
+            viewModel = panelGameViewModel
         )
     }
 }

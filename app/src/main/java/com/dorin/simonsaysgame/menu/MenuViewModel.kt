@@ -5,23 +5,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.dorin.simonsaysgame.datastore.DataStoreRepository
 import com.dorin.simonsaysgame.menu.settings.FabSettingsState
 import com.dorin.simonsaysgame.menu.settings.settings_menu.SettingsMenuEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
-class MenuViewModel : ViewModel() {
-
-  //  private var allItems = DataProvider.puppyList
-    private var currentItemId: Int = 0
-
-    var fabSettingsState by mutableStateOf(FabSettingsState.DEFAULT)
-    private set
-
-
+class MenuViewModel @Inject constructor(
+    private val dataStoreRepository: DataStoreRepository
+) : ViewModel() {
 
     companion object {
         const val TAG = "MenuViewModel"
     }
+
+    init {
+
+    }
+
+    var fabSettingsState by mutableStateOf(FabSettingsState.DEFAULT)
+    private set
 
 
     fun handleEvent(event: MenuEvent){
@@ -29,7 +35,7 @@ class MenuViewModel : ViewModel() {
 
         when(event){
             is MenuEvent.SettingsButtonClicked -> settingsButtonClicked()
-           // is MenuEvent.FeedItemClicked -> itemClicked(event.id)
+            else -> {}
         }
 
     }
@@ -43,7 +49,6 @@ class MenuViewModel : ViewModel() {
             SettingsMenuEvent.Terms -> termsClicked()
             SettingsMenuEvent.About -> aboutClicked()
         }
-
         fabSettingsDismiss()
     }
 
@@ -68,6 +73,12 @@ class MenuViewModel : ViewModel() {
 
     private fun aboutClicked() {
         TODO("Not yet implemented")
+    }
+
+    fun persistEasyState(easy: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistEasyState(easy = easy)
+        }
     }
 
 }

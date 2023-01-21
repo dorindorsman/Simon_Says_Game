@@ -12,7 +12,8 @@ import com.dorin.simonsaysgame.menu.MenuViewModel
 
 @ExperimentalAnimationApi
 fun NavGraphBuilder.menuComposable(
-    navigateToPanelGame: () -> Unit
+    navigateToPanelGame: () -> Unit,
+    menuViewModel : MenuViewModel
 ) {
     composable(
         route = Screens.MENU_SCREEN,
@@ -27,7 +28,7 @@ fun NavGraphBuilder.menuComposable(
     ) {
         MenuScreen(
             navigateToPanelGame = navigateToPanelGame,
-            viewModel = viewModel() as MenuViewModel
+            viewModel = menuViewModel
         )
     }
 }

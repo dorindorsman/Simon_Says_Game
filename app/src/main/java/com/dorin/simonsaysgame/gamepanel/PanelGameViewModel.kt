@@ -1,16 +1,31 @@
-package com.dorin.simonsaysgame.gamePanel
+package com.dorin.simonsaysgame.gamepanel
 
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dorin.simonsaysgame.R
+import com.dorin.simonsaysgame.datastore.DataStoreRepository
+import com.dorin.simonsaysgame.ui.theme.*
+import com.dorin.simonsaysgame.until.RequestState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 import kotlin.random.Random
 
+@HiltViewModel
+class PanelGameViewModel @Inject constructor(
+    private val dataStoreRepository: DataStoreRepository
+) : ViewModel() {
 
-class PanelGameScreenViewModel : ViewModel() {
+    companion object {
+        const val TAG = "PanelGameScreenViewModel"
+    }
 
     var rewardedAdsLoadingState by mutableStateOf(false)
         private set
@@ -18,16 +33,52 @@ class PanelGameScreenViewModel : ViewModel() {
     var viewState by mutableStateOf(ViewState())
         private set
 
-    companion object {
-        const val TAG = "PanelGameScreenViewModel"
+    var btnColorState by mutableStateOf<Color>(Green)
+        private set
+
+    var btnSoundState by mutableStateOf<Int>(R.raw.victory)
+        private set
+
+    var highScore : Int = 0
+
+    var levelState by mutableStateOf<Int>(500)
+        private set
+
+    private val _sortState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
+    val sortState: StateFlow<RequestState<Int>> = _sortState
+
+    init {
+        readEasyState()
     }
 
+    private fun readEasyState() {
+        _sortState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readEasyState
+                    .collect {
+                        _sortState.value = RequestState.Success(it)
+                    }
+            }
+        } catch (e: Exception) {
+            _sortState.value = RequestState.Error(e)
+        }
+    }
+
+    fun persistEasyState(easy: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistEasyState(easy = easy)
+        }
+    }
 
     fun handleEvent(event: PanelGameEvent) {
         Log.d(TAG, "game event: $event")
 
         when (event) {
             is PanelGameEvent.SetRewardedAdsLoadingState -> rewardedAdsLoadingState = event.boolean
+            is PanelGameEvent.SetButtonColorState -> setColor(event.color)
+            is PanelGameEvent.SetButtonSound -> setSound(event.index)
+            else -> {}
         }
     }
 
@@ -258,6 +309,7 @@ class PanelGameScreenViewModel : ViewModel() {
                                     playerTurn = false
                                 )
                             )
+                            setHighScore()
                         }
                         delay(3000)
                     }
@@ -272,6 +324,36 @@ class PanelGameScreenViewModel : ViewModel() {
         emit(
             ViewState()
         )
+    }
+
+    private fun setColor(color: Color) {
+        btnColorState = color
+    }
+
+    private fun setSound(index: Int) {
+        when (btnColorState) {
+            Green -> R.raw.green
+            Red -> R.raw.red
+            Yellow -> R.raw.yellow
+            LightBrightBlue -> R.raw.blue
+            else -> {
+                R.raw.error
+            }
+        }
+
+        if (viewState.btnStates[index] == 2) {
+            btnColorState = correct
+            btnSoundState = R.raw.victory
+        } else if (viewState.btnStates[index] == 3) {
+            btnColorState = inCorrect
+            btnSoundState = R.raw.error
+        }
+    }
+
+    private fun setHighScore() {
+        if(viewState.score > highScore){
+            highScore = viewState.score
+        }
     }
 
 

@@ -1,4 +1,4 @@
-package com.dorin.simonsaysgame.gamePanel
+package com.dorin.simonsaysgame.gamepanel
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -47,26 +47,28 @@ import com.dorin.simonsaysgame.ui.theme.*
 @Composable
 fun PanelGameScreen(
     navigateToMenuScreen: () -> Unit,
-    viewModel: PanelGameScreenViewModel,
+    viewModel: PanelGameViewModel,
 ) {
 
     //Define Needed Variables
+    val context = LocalContext.current
     val viewState = viewModel.viewState
+    val mediaPlayer = MediaPlayer.create(context, viewModel.btnSoundState)
 
     //Start Button Used To Begin Game
-    SimonSaysGameBoard(viewState, viewModel, navigateToMenuScreen)
+    SimonSaysGameBoard(context, viewState, viewModel, mediaPlayer, navigateToMenuScreen)
 
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SimonSaysGameBoard(
-    viewState: PanelGameScreenViewModel.ViewState,
-    viewModel: PanelGameScreenViewModel,
+    context: Context,
+    viewState: PanelGameViewModel.ViewState,
+    viewModel: PanelGameViewModel,
+    mediaPlayer: MediaPlayer,
     navigateToMenuScreen: () -> Unit
 ) {
-    val context = LocalContext.current
-
     ConstraintLayout(
         modifier = Modifier
             .background(Color.Black)
@@ -74,30 +76,43 @@ fun SimonSaysGameBoard(
             .padding(15.dp)
     ) {
 
-        val (liveScore, btnTop, btnBottom, circle, ads) = createRefs()
+        val (highScore, liveScore, btnTop, btnBottom, circle, ads) = createRefs()
 
-        Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .constrainAs(highScore) {
+                    top.linkTo(parent.top, margin = 10.dp)
+                }) {
+            if (viewState.gameRunning) {
+                Text(
+                    text = "High Score: ${viewModel.highScore}",
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
                 .constrainAs(liveScore) {
-                    top.linkTo(parent.top, margin = 20.dp)
+                    top.linkTo(highScore.bottom, margin = 10.dp)
                 }) {
             if (!viewState.gameRunning) {
                 StartButton(viewModel)
             } else {
                 Text(
-                    text = "Chances: ${viewState.attemptsLeft}",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    text = "Lives: ${viewState.attemptsLeft}", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.width(120.dp))
+                Spacer(modifier = Modifier.width(30.dp))
                 Text(
-                    text = "Scores: ${viewState.score}",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    text = "Score: ${viewState.score}", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -114,21 +129,25 @@ fun SimonSaysGameBoard(
 
 
             SimonSaysButton(
-                color = Green, pressColor = PressedGreen,
+                color = Green,
+                pressColor = PressedGreen,
                 shape = GameShapeTopLeft.small as RoundedCornerShape,
                 index = 0,
                 viewState = viewState,
                 viewModel = viewModel,
-                context = context
+                context = context,
+                mediaPlayer = mediaPlayer
             )
 
             SimonSaysButton(
-                color = Red, pressColor = PressedRed,
+                color = Red,
+                pressColor = PressedRed,
                 shape = GameShapeTopRight.small as RoundedCornerShape,
                 index = 1,
                 viewState = viewState,
                 viewModel = viewModel,
-                context = context
+                context = context,
+                mediaPlayer = mediaPlayer
             )
 
         }
@@ -141,25 +160,28 @@ fun SimonSaysGameBoard(
                     end = parent.end,
                 )
                 top.linkTo(btnTop.bottom)
-            })
-        {
+            }) {
 
             SimonSaysButton(
-                color = Yellow, pressColor = PressedYellow,
+                color = Yellow,
+                pressColor = PressedYellow,
                 shape = GameShapeBottomLeft.small as RoundedCornerShape,
                 index = 2,
                 viewState = viewState,
                 viewModel = viewModel,
-                context = context
+                context = context,
+                mediaPlayer = mediaPlayer
             )
 
             SimonSaysButton(
-                color = LightBrightBlue, pressColor = PressedLightBrightBlue,
+                color = LightBrightBlue,
+                pressColor = PressedLightBrightBlue,
                 shape = GameShapeBottomRight.small as RoundedCornerShape,
                 index = 3,
                 viewState = viewState,
                 viewModel = viewModel,
-                context = context
+                context = context,
+                mediaPlayer = mediaPlayer
             )
         }
 
@@ -168,10 +190,7 @@ fun SimonSaysGameBoard(
                 .wrapContentSize()
                 .constrainAs(circle) {
                     linkTo(
-                        start = parent.start,
-                        end = parent.end,
-                        top = btnTop.top,
-                        bottom = btnBottom.bottom
+                        start = parent.start, end = parent.end, top = btnTop.top, bottom = btnBottom.bottom
                     )
                 }
                 .size(100.dp),
@@ -179,17 +198,13 @@ fun SimonSaysGameBoard(
             backgroundColor = Color.Black,
         ) {
             Text(
-                text = stringResource(id = R.string.simon),
-                fontSize = 20.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+                text = stringResource(id = R.string.simon), fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold
             )
         }
 
         BannersAds(modifier = Modifier.constrainAs(ads) {
             linkTo(
-                start = parent.start,
-                end = parent.end
+                start = parent.start, end = parent.end
             )
             bottom.linkTo(parent.bottom)
         })
@@ -209,10 +224,7 @@ fun SimonSaysGameBoard(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertDialogScreen(
-    context: Context,
-    viewState: PanelGameScreenViewModel.ViewState,
-    viewModel: PanelGameScreenViewModel,
-    navigateToMenuScreen: () -> Unit
+    context: Context, viewState: PanelGameViewModel.ViewState, viewModel: PanelGameViewModel, navigateToMenuScreen: () -> Unit
 ) {
     AlertDialog(onDismissRequest = {},
         title = { Text(stringResource(id = R.string.game_completed)) },
@@ -220,36 +232,27 @@ fun AlertDialogScreen(
         confirmButton = {
             ExtendedFloatingActionButton(text = {
                 Text(
-                    modifier = Modifier.wrapContentSize(),
-                    text = stringResource(id = R.string.retry),
-                    color = Color.White
+                    modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.retry), color = Color.White
                 )
-            },
-                shape = RoundedCornerShape(16.dp),
-                onClick = {
-                    saveScore(viewState.score, context)
-                    viewModel.reset()
-                })
+            }, shape = RoundedCornerShape(16.dp), onClick = {
+                saveScore(viewState.score, context)
+                viewModel.reset()
+            })
         },
         dismissButton = {
             ExtendedFloatingActionButton(text = {
                 Text(
-                    modifier = Modifier.wrapContentSize(),
-                    text = stringResource(id = R.string.back_to_game_menu),
-                    color = Color.White
+                    modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.back_to_game_menu), color = Color.White
                 )
-            },
-                shape = RoundedCornerShape(16.dp),
-                onClick = {
-                    saveScore(viewState.score, context)
-                    navigateToMenuScreen()
-                })
-        }
-    )
+            }, shape = RoundedCornerShape(16.dp), onClick = {
+                saveScore(viewState.score, context)
+                navigateToMenuScreen()
+            })
+        })
 }
 
 @Composable
-fun StartButton(viewModel: PanelGameScreenViewModel) {
+fun StartButton(viewModel: PanelGameViewModel) {
     ExtendedFloatingActionButton(
         modifier = Modifier
             .wrapContentSize()
@@ -261,20 +264,15 @@ fun StartButton(viewModel: PanelGameScreenViewModel) {
         },
         text = {
             Text(
-                modifier = Modifier.wrapContentSize(),
-                text = stringResource(id = R.string.play),
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 20.sp,
-                    color = Color.White
+                modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.play), style = TextStyle(
+                    fontFamily = FontFamily.Monospace, fontSize = 20.sp, color = Color.White
                 )
             )
         },
         icon = {
             Icon(
                 painter = painterResource(id = R.drawable.ic_play_arrow),
-                modifier = Modifier
-                    .size(30.dp),
+                modifier = Modifier.size(30.dp),
                 contentDescription = null,
                 tint = Color.White
             )
@@ -291,9 +289,10 @@ fun SimonSaysButton(
     pressColor: Color,
     shape: RoundedCornerShape,
     index: Int,
-    viewState: PanelGameScreenViewModel.ViewState,
-    viewModel: PanelGameScreenViewModel,
-    context: Context
+    viewState: PanelGameViewModel.ViewState,
+    viewModel: PanelGameViewModel,
+    context: Context,
+    mediaPlayer: MediaPlayer
 ) {
 
 
@@ -305,6 +304,9 @@ fun SimonSaysButton(
     //Logic Variables
     val pt = viewState.playerTurn
     var btnColorState = remember { mutableStateOf(color) }
+
+    //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(color))
+    //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
 
     //Sounds Variable
     var buttonSound = when (color) {
@@ -326,37 +328,38 @@ fun SimonSaysButton(
         btnColorState = remember { mutableStateOf(inCorrect) }
         buttonSound = R.raw.error
     }
+
+    //mediaPlayer.playbackParams.setAudioFallbackMode(buttonSound)
     val mediaPlayer = MediaPlayer.create(context, buttonSound)
 
-    Button(
-        onClick = {
-        },
-        shape = shape,
-        modifier = Modifier
-            .padding(5.dp)
-            .size(150.dp)
-            .scale(scale.value)
-            .pointerInteropFilter {
-                when (it.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        if (pt) {
-                            selected.value = true
-                            btnColorState.value = pressColor
-                        }
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        if (pt) {
-                            selected.value = false
-                            btnColorState.value = color
-                            viewModel.receiveInput(index)
-                        }
+    Button(onClick = {}, shape = shape, modifier = Modifier
+        .padding(5.dp)
+        .size(150.dp)
+        .scale(scale.value)
+        .pointerInteropFilter {
+            when (it.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    if (pt) {
+                        selected.value = true
+                        btnColorState.value = pressColor
+                        //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
+                        //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(pressColor))
                     }
                 }
-                true
-            },
-        colors = ButtonDefaults.buttonColors(containerColor = btnColorState.value)
+                MotionEvent.ACTION_UP -> {
+                    if (pt) {
+                        selected.value = false
+                        btnColorState.value = color
+                        viewModel.receiveInput(index)
+                        //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
+                        //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(color))
+                    }
+                }
+            }
+            true
+        }, colors = ButtonDefaults.buttonColors(containerColor = btnColorState.value)
     ) {
-        if(btnColorState.value == pressColor || viewState.btnStates[index] == 2 || viewState.btnStates[index] == 3){
+        if (btnColorState.value == pressColor || viewState.btnStates[index] == 2 || viewState.btnStates[index] == 3) {
             mediaPlayer.start()
         }
     }
@@ -367,8 +370,7 @@ fun SimonSaysButton(
 @RequiresApi(Build.VERSION_CODES.O)
 fun saveScore(score: Int, context: Context) {
     ScoreImpl.addScore(
-        gameId = 1,
-        gameScore = score, context = context
+        gameId = 1, gameScore = score, context = context
     )
 
 }

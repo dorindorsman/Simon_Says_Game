@@ -11,13 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.dorin.simonsaysgame.gamePanel.PanelGameEvent
-import com.dorin.simonsaysgame.gamePanel.PanelGameScreenViewModel
-import com.dorin.simonsaysgame.menu.MenuEvent
-import com.dorin.simonsaysgame.menu.MenuViewModel
+import com.dorin.simonsaysgame.gamepanel.PanelGameEvent
+import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -64,7 +61,7 @@ fun BannersAds(modifier: Modifier) {
 
 
 @Composable
-fun RewardedAdsLoading(context: Context, viewModel: PanelGameScreenViewModel) {
+fun RewardedAdsLoading(context: Context, viewModel: PanelGameViewModel) {
     val adRequest = AdRequest.Builder().build()
     RewardedAd.load(
         context,
@@ -87,7 +84,7 @@ fun RewardedAdsLoading(context: Context, viewModel: PanelGameScreenViewModel) {
 
 
 @Composable
-fun RewardedAdsShow(context: Context, viewModel: PanelGameScreenViewModel) {
+fun RewardedAdsShow(context: Context, viewModel: PanelGameViewModel) {
     if (mRewardedAd != null) {
         mRewardedAd?.show(context as Activity, OnUserEarnedRewardListener() {
             fun onUserEarnedReward(rewardItem: RewardItem) {

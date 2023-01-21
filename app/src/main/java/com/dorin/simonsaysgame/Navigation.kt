@@ -11,14 +11,18 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.dorin.simonsaysgame.destination.splashComposable
 import com.dorin.simonsaysgame.destination.menuComposable
 import com.dorin.simonsaysgame.destination.panelGameComposable
+import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
+import com.dorin.simonsaysgame.menu.MenuViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 @Composable
 fun Navigation(
-    navController: NavHostController
-) {
+    navController: NavHostController,
+    menuViewModel : MenuViewModel,
+    panelGameViewModel : PanelGameViewModel
+    ) {
     val screen = remember(navController) {
         Screens(navController = navController)
     }
@@ -31,10 +35,12 @@ fun Navigation(
             navigateToMenuScreen = screen.toMain
         )
         menuComposable(
-            navigateToPanelGame = screen.toGame
+            navigateToPanelGame = screen.toGame,
+            menuViewModel = menuViewModel
         )
         panelGameComposable(
-            navigateToMenuScreen = screen.toMain
+            navigateToMenuScreen = screen.toMain,
+            panelGameViewModel = panelGameViewModel
         )
     }
 }
