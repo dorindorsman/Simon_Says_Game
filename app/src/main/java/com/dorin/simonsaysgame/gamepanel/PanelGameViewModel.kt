@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.datastore.DataStoreRepository
+import com.dorin.simonsaysgame.menu.GameMode
 import com.dorin.simonsaysgame.ui.theme.*
 import com.dorin.simonsaysgame.until.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,7 +40,10 @@ class PanelGameViewModel @Inject constructor(
     var btnSoundState by mutableStateOf<Int>(R.raw.victory)
         private set
 
-    var highScore : Int = 0
+    var highScore: Int = 0
+
+    var gameModeState by mutableStateOf(GameMode.EASY)
+        private set
 
     var levelState by mutableStateOf<Int>(500)
         private set
@@ -55,7 +59,7 @@ class PanelGameViewModel @Inject constructor(
         _sortState.value = RequestState.Loading
         try {
             viewModelScope.launch {
-                dataStoreRepository.readEasyState
+                dataStoreRepository.readHardState
                     .collect {
                         _sortState.value = RequestState.Success(it)
                     }
@@ -78,8 +82,21 @@ class PanelGameViewModel @Inject constructor(
             is PanelGameEvent.SetRewardedAdsLoadingState -> rewardedAdsLoadingState = event.boolean
             is PanelGameEvent.SetButtonColorState -> setColor(event.color)
             is PanelGameEvent.SetButtonSound -> setSound(event.index)
+            is PanelGameEvent.GameModeButtonClicked -> setGameMode(event.gameMode)
             else -> {}
         }
+    }
+
+    private fun setGameMode(gameMode: Int) {
+        gameModeState = when (gameMode) {
+            0 -> GameMode.EASY
+            1 -> GameMode.MEDIUM
+            2 -> GameMode.HARD
+            else -> {
+                GameMode.EASY
+            }
+        }
+        Log.d(TAG, gameModeState.name)
     }
 
     // current sequence
@@ -351,7 +368,7 @@ class PanelGameViewModel @Inject constructor(
     }
 
     private fun setHighScore() {
-        if(viewState.score > highScore){
+        if (viewState.score > highScore) {
             highScore = viewState.score
         }
     }
