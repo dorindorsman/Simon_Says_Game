@@ -1,4 +1,4 @@
-package com.dorin.simonsaysgame
+package com.dorin.simonsaysgame.navigation
 
 import androidx.navigation.NavController
 import com.dorin.simonsaysgame.menu.GameMode
@@ -26,8 +26,6 @@ class Screens(navController: NavController) {
     }
 
     val game: () -> Unit = {
-        navController.navigate(route = MENU_SCREEN) {
-        }
-
+        navController.navigate(route = MENU_SCREEN)
     }
 }

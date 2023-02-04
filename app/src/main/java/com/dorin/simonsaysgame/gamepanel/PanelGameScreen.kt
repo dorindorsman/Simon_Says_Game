@@ -39,7 +39,6 @@ import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.ads.BannersAds
 import com.dorin.simonsaysgame.ads.RewardedAdsLoading
 import com.dorin.simonsaysgame.ads.RewardedAdsShow
-import com.dorin.simonsaysgame.score.ScoreImpl
 import com.dorin.simonsaysgame.ui.theme.*
 
 
@@ -209,7 +208,6 @@ fun SimonSaysGameBoard(
             bottom.linkTo(parent.bottom)
         })
 
-
         if (viewState.attemptsLeft == 0) {
             RewardedAdsLoading(context, viewModel)
             if (viewModel.rewardedAdsLoadingState) {
@@ -235,7 +233,7 @@ fun AlertDialogScreen(
                     modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.retry), color = Color.White
                 )
             }, shape = RoundedCornerShape(16.dp), onClick = {
-                saveScore(viewState.score, context)
+                viewModel.handleEvent(PanelGameEvent.SetHighScore)
                 viewModel.reset()
             })
         },
@@ -245,7 +243,8 @@ fun AlertDialogScreen(
                     modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.back_to_game_menu), color = Color.White
                 )
             }, shape = RoundedCornerShape(16.dp), onClick = {
-                saveScore(viewState.score, context)
+                viewModel.handleEvent(PanelGameEvent.SetHighScore)
+                viewModel.reset()
                 navigateToMenuScreen()
             })
         })
@@ -294,7 +293,6 @@ fun SimonSaysButton(
     context: Context,
     mediaPlayer: MediaPlayer
 ) {
-
 
     //Animation Variables
     val selected = remember { mutableStateOf(false) }
@@ -367,68 +365,15 @@ fun SimonSaysButton(
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-fun saveScore(score: Int, context: Context) {
-    ScoreImpl.addScore(
-        gameId = 1, gameScore = score, context = context
-    )
-
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//fun saveScore(score: Int, context: Context) {
+//    ScoreImpl.addScore(
+//        gameId = 1, gameScore = score, context = context
+//    )
+//}
 
 @Preview
 @Composable
 private fun MenuScreenPreview() {
 
 }
-
-
-//top
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(5.dp)
-//                    .size(150.dp),
-//                shape = GameShapeTopLeft.small,
-//                backgroundColor = Green,
-//                onClick = {
-//
-//                },
-//                content = {}
-//            )
-
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(5.dp)
-//                    .size(150.dp),
-//                shape = GameShapeTopRight.small,
-//                backgroundColor = Red,
-//                onClick = {
-//
-//                },
-//                content = {}
-//            )
-
-
-//bottom
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(5.dp)
-//                    .size(150.dp),
-//                shape = GameShapeBottomLeft.small,
-//                backgroundColor = Yellow,
-//                onClick = {
-//
-//                },
-//                content = {}
-//            )
-//
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(5.dp)
-//                    .size(150.dp),
-//                shape = GameShapeBottomRight.small,
-//                backgroundColor = LightBrightBlue,
-//                onClick = {
-//
-//                },
-//                content = {}
-//            )

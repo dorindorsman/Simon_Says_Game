@@ -1,14 +1,14 @@
-package com.dorin.simonsaysgame.destination
+package com.dorin.simonsaysgame.navigation.destination
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.navigation.NavGraphBuilder
-import com.google.accompanist.navigation.animation.composable
-import com.dorin.simonsaysgame.Screens.Companion.MENU_SCREEN
+import com.dorin.simonsaysgame.navigation.Screens.Companion.MENU_SCREEN
 import com.dorin.simonsaysgame.menu.GameMode
 import com.dorin.simonsaysgame.menu.MenuScreen
 import com.dorin.simonsaysgame.menu.MenuViewModel
+import com.google.accompanist.navigation.animation.composable
 
 @ExperimentalAnimationApi
 fun NavGraphBuilder.menuComposable(

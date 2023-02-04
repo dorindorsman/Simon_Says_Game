@@ -1,12 +1,14 @@
 package com.dorin.simonsaysgame.menu.settings
 
-import androidx.compose.animation.*
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,9 +18,9 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.menu.MenuEvent
 import com.dorin.simonsaysgame.menu.MenuViewModel
-import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.menu.settings.settings_menu.floatingActionMenuOptions
 
 const val EnterAnimationDurationMilli = 200

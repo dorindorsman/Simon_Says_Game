@@ -1,4 +1,4 @@
-package com.dorin.simonsaysgame.destination
+package com.dorin.simonsaysgame.navigation.destination
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -9,12 +9,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.google.accompanist.navigation.animation.composable
-import com.dorin.simonsaysgame.Screens.Companion.PANEL_GAME_ARGUMENT_KEY
-import com.dorin.simonsaysgame.Screens.Companion.PANEL_GAME_SCREEN
+import com.dorin.simonsaysgame.navigation.Screens.Companion.PANEL_GAME_ARGUMENT_KEY
+import com.dorin.simonsaysgame.navigation.Screens.Companion.PANEL_GAME_SCREEN
 import com.dorin.simonsaysgame.gamepanel.PanelGameEvent
 import com.dorin.simonsaysgame.gamepanel.PanelGameScreen
 import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
+import com.google.accompanist.navigation.animation.composable
 
 @RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi

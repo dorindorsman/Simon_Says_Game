@@ -15,11 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dorin.simonsaysgame.gamepanel.PanelGameEvent
 import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.OnUserEarnedRewardListener
+import com.google.android.gms.ads.*
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
@@ -77,7 +73,6 @@ fun RewardedAdsLoading(context: Context, viewModel: PanelGameViewModel) {
                 Log.d(TAG, "Ad was loaded.")
                 mRewardedAd = rewardedAd
                 viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(true))
-
             }
         })
 }
@@ -92,6 +87,7 @@ fun RewardedAdsShow(context: Context, viewModel: PanelGameViewModel) {
                 var rewardType = rewardItem.type
                 Log.d(TAG, "User earned the reward.")
                 viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(false))
+                //mRewardedAd = null
             }
         })
     } else {

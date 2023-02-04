@@ -80,10 +80,6 @@ class MenuViewModel @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    fun persistCurrentState(gameMode: GameMode) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.persistCurrentState(gameMode = gameMode)
-        }
-    }
+
 
 }

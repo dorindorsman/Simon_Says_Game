@@ -13,9 +13,12 @@ import com.dorin.simonsaysgame.menu.GameMode
 import com.dorin.simonsaysgame.ui.theme.*
 import com.dorin.simonsaysgame.until.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -45,7 +48,7 @@ class PanelGameViewModel @Inject constructor(
     var gameModeState by mutableStateOf(GameMode.EASY)
         private set
 
-    var levelState by mutableStateOf<Int>(500)
+    var levelState by mutableStateOf(500)
         private set
 
     private val _sortState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
@@ -53,26 +56,6 @@ class PanelGameViewModel @Inject constructor(
 
     init {
         readEasyState()
-    }
-
-    private fun readEasyState() {
-        _sortState.value = RequestState.Loading
-        try {
-            viewModelScope.launch {
-                dataStoreRepository.readHardState
-                    .collect {
-                        _sortState.value = RequestState.Success(it)
-                    }
-            }
-        } catch (e: Exception) {
-            _sortState.value = RequestState.Error(e)
-        }
-    }
-
-    fun persistEasyState(easy: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.persistEasyState(easy = easy)
-        }
     }
 
     fun handleEvent(event: PanelGameEvent) {
@@ -83,20 +66,35 @@ class PanelGameViewModel @Inject constructor(
             is PanelGameEvent.SetButtonColorState -> setColor(event.color)
             is PanelGameEvent.SetButtonSound -> setSound(event.index)
             is PanelGameEvent.GameModeButtonClicked -> setGameMode(event.gameMode)
+            is PanelGameEvent.SetHighScore -> setHighScore()
             else -> {}
         }
     }
 
     private fun setGameMode(gameMode: Int) {
-        gameModeState = when (gameMode) {
-            0 -> GameMode.EASY
-            1 -> GameMode.MEDIUM
-            2 -> GameMode.HARD
+        when (gameMode) {
+            0 -> {
+                readEasyState()
+                gameModeState = GameMode.EASY
+                levelState = 500
+            }
+            1 -> {
+                readMediumState()
+                gameModeState = GameMode.MEDIUM
+                levelState = 400
+            }
+            2 -> {
+                readHardState()
+                gameModeState = GameMode.HARD
+                levelState = 300
+            }
             else -> {
-                GameMode.EASY
+                readEasyState()
+                gameModeState = GameMode.EASY
+                levelState = 500
             }
         }
-        Log.d(TAG, gameModeState.name)
+        Log.d(TAG, gameModeState.name +" "+levelState)
     }
 
     // current sequence
@@ -371,7 +369,71 @@ class PanelGameViewModel @Inject constructor(
         if (viewState.score > highScore) {
             highScore = viewState.score
         }
+
+        when(gameModeState){
+            GameMode.EASY -> { persistEasyState(highScore) }
+            GameMode.MEDIUM -> { persistMediumState(highScore) }
+            GameMode.HARD -> {persistHardState(highScore) }
+        }
     }
 
+    private fun readEasyState() {
+        _sortState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readEasyState
+                    .collect {
+                        _sortState.value = RequestState.Success(it)
+                    }
+            }
+        } catch (e: Exception) {
+            _sortState.value = RequestState.Error(e)
+        }
+    }
 
+    private fun readMediumState() {
+        _sortState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readMediumState
+                    .collect {
+                        _sortState.value = RequestState.Success(it)
+                    }
+            }
+        } catch (e: Exception) {
+            _sortState.value = RequestState.Error(e)
+        }
+    }
+
+    private fun readHardState() {
+        _sortState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readHardState
+                    .collect {
+                        _sortState.value = RequestState.Success(it)
+                    }
+            }
+        } catch (e: Exception) {
+            _sortState.value = RequestState.Error(e)
+        }
+    }
+
+    private fun persistEasyState(highScore: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistEasyState( easy = highScore)
+        }
+    }
+
+    private fun persistMediumState(highScore: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistMediumState(medium = highScore)
+        }
+    }
+
+    private fun persistHardState(highScore: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistHardState(hard = highScore)
+        }
+    }
 }

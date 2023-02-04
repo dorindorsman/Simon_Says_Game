@@ -2,7 +2,10 @@ package com.dorin.simonsaysgame.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.dorin.simonsaysgame.datastore.DataStoreRepository.Companion.PREFERENCE_NAME
 import com.dorin.simonsaysgame.menu.GameMode
@@ -26,14 +29,12 @@ class DataStoreRepository @Inject constructor(
         const val PREFERENCE_KEY_EASY = "easy_score_state"
         const val PREFERENCE_KEY_MEDIUM = "medium_score_state"
         const val PREFERENCE_KEY_HARD = "hard_score_state"
-        const val PREFERENCE_KEY_CURRENT = "current_score_state"
     }
 
     private object PreferenceKeys {
         val easyKey = intPreferencesKey(name = PREFERENCE_KEY_EASY)
         val mediumKey = intPreferencesKey(name = PREFERENCE_KEY_MEDIUM)
         val hardKey = intPreferencesKey(name = PREFERENCE_KEY_HARD)
-        val currentKey = intPreferencesKey(name = PREFERENCE_KEY_CURRENT)
     }
 
     private val dataStore = context.dataStore
@@ -95,23 +96,4 @@ class DataStoreRepository @Inject constructor(
             hardState
         }
 
-
-    suspend fun persistCurrentState(gameMode: GameMode) {
-        dataStore.edit { preference ->
-            preference[PreferenceKeys.currentKey] = gameMode.ordinal
-        }
-    }
-
-    val readCurrentState : Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw  exception
-            }
-        }
-        .map { preferences ->
-            val currentState = preferences[PreferenceKeys.currentKey] ?: 0
-            currentState
-        }
 }

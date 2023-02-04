@@ -1,4 +1,4 @@
-package com.dorin.simonsaysgame.destination
+package com.dorin.simonsaysgame.navigation.destination
 
 
 object Destinations {
