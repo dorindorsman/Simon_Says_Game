@@ -1,6 +1,8 @@
 package com.dorin.simonsaysgame.gamepanel
 
 import androidx.compose.ui.graphics.Color
+import com.dorin.simonsaysgame.menu.GameMode
+import com.dorin.simonsaysgame.menu.MenuEvent
 
 
 sealed class PanelGameEvent {

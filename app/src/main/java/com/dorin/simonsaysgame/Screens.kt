@@ -21,14 +21,13 @@ class Screens(navController: NavController) {
         }
     }
 
-    val menu: (gameMode :GameMode) -> Unit = { gameMode ->
+    val menu: (gameMode: GameMode) -> Unit = { gameMode ->
         navController.navigate(route = "game/${gameMode.ordinal}")
     }
 
     val game: () -> Unit = {
         navController.navigate(route = MENU_SCREEN) {
         }
+
     }
-
-
 }
