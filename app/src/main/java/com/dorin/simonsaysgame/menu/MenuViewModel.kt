@@ -9,11 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.dorin.simonsaysgame.datastore.DataStoreRepository
 import com.dorin.simonsaysgame.menu.settings.FabSettingsState
 import com.dorin.simonsaysgame.menu.settings.settings_menu.SettingsMenuEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+@HiltViewModel
 class MenuViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository
 ) : ViewModel() {
@@ -53,10 +54,14 @@ class MenuViewModel @Inject constructor(
     }
 
     private fun fabSettingsDismiss() {
+        Log.d(TAG, "fabSettingsDismiss")
+
         fabSettingsState = FabSettingsState.DEFAULT
     }
 
     private fun settingsButtonClicked() {
+        Log.d(TAG, "settingsButtonClicked")
+
         fabSettingsState = when (fabSettingsState) {
             FabSettingsState.DEFAULT -> FabSettingsState.EXPANDED
             FabSettingsState.EXPANDED -> FabSettingsState.DEFAULT
@@ -75,9 +80,9 @@ class MenuViewModel @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    fun persistEasyState(easy: Int) {
+    fun persistCurrentState(gameMode: GameMode) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.persistEasyState(easy = easy)
+            dataStoreRepository.persistCurrentState(gameMode = gameMode)
         }
     }
 

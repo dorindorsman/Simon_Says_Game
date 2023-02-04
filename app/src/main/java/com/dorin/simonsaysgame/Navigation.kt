@@ -32,14 +32,14 @@ fun Navigation(
         startDestination = SPLASH_SCREEN
     ) {
         splashComposable(
-            navigateToMenuScreen = screen.toMain
+            navigateToMenuScreen = screen.splash
         )
         menuComposable(
-            navigateToPanelGame = screen.toGame,
+            navigateToPanelGame = screen.menu,
             menuViewModel = menuViewModel
         )
         panelGameComposable(
-            navigateToMenuScreen = screen.toMain,
+            navigateToMenuScreen = screen.game,
             panelGameViewModel = panelGameViewModel
         )
     }

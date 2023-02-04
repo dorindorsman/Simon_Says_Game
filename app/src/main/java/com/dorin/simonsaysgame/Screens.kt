@@ -1,16 +1,19 @@
 package com.dorin.simonsaysgame
 
 import androidx.navigation.NavController
+import com.dorin.simonsaysgame.menu.GameMode
+
 
 class Screens(navController: NavController) {
 
     companion object {
         const val SPLASH_SCREEN = "splash"
         const val MENU_SCREEN = "menu"
-        const val PANEL_GAME_SCREEN = "panel_game"
+        const val PANEL_GAME_SCREEN = "game/{mode}"
+        const val PANEL_GAME_ARGUMENT_KEY = "mode"
     }
 
-    val toMain: () -> Unit = {
+    val splash: () -> Unit = {
         navController.navigate(route = MENU_SCREEN) {
             popUpTo(SPLASH_SCREEN) {
                 inclusive = true
@@ -18,25 +21,14 @@ class Screens(navController: NavController) {
         }
     }
 
-    val toGame: () -> Unit = {
-        navController.navigate(route = PANEL_GAME_SCREEN)
+    val menu: (gameMode :GameMode) -> Unit = { gameMode ->
+        navController.navigate(route = "game/${gameMode.ordinal}")
+    }
+
+    val game: () -> Unit = {
+        navController.navigate(route = MENU_SCREEN) {
+        }
     }
 
 
-
-//
-//    val userType: () -> Unit = { userType ->
-//        when (userType) {
-//            UserType.Teacher -> navController.navigate(route = TEACHER_LOGIN_SCREEN)
-//            UserType.Child -> navController.navigate(route = CHILD_LOGIN_SCREEN)
-//        }
-//    }
-//
-//    val child: () -> Unit = {
-//        navController.navigate(route = MAIN_SCREEN)
-//    }
-//
-//    val teacher: () -> Unit = {
-//        navController.navigate(route = MAIN_SCREEN)
-//    }
 }

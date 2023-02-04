@@ -30,8 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.ads.BannersAds
-import com.dorin.simonsaysgame.ads.RewardedAdsLoading
-import com.dorin.simonsaysgame.ads.RewardedAdsShow
 import com.dorin.simonsaysgame.menu.settings.FloatingActionButtonMenu
 import com.dorin.simonsaysgame.menu.settings.settings_menu.floatingActionMenuOptions
 import com.dorin.simonsaysgame.ui.theme.*
@@ -42,7 +40,7 @@ import java.io.InputStream
 
 @Composable
 fun MenuScreen(
-    navigateToPanelGame: () -> Unit,
+    navigateToPanelGame: (GameMode) -> Unit,
     viewModel: MenuViewModel
 ) {
 
@@ -160,7 +158,7 @@ fun TitleText(modifier: Modifier) {
 }
 
 @Composable
-fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGame: () -> Unit) {
+fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGame: (GameMode) -> Unit) {
 
     Column(modifier = modifier) {
 
@@ -172,7 +170,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
-                navigateToPanelGame()
+                navigateToPanelGame(GameMode.EASY)
             },
             text = {
                 Text(
@@ -206,7 +204,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
-                navigateToPanelGame()
+                navigateToPanelGame(GameMode.MEDIUM)
             },
             text = {
                 Text(
@@ -240,7 +238,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
-                navigateToPanelGame()
+                navigateToPanelGame(GameMode.HARD)
             },
             text = {
                 Text(
