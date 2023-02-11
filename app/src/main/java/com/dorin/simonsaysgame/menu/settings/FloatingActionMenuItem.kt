@@ -38,7 +38,6 @@ fun FloatingActionMenuItem(floatingActionMenuModel: FloatingActionMenuModel) {
                 this.text = AnnotatedString(titleStr)
             },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Icon(
             modifier = Modifier

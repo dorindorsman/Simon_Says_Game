@@ -1,11 +1,5 @@
 package com.dorin.simonsaysgame.menu
 
-import android.app.Activity
-import android.app.AlertDialog
-import android.os.Build
-import android.text.Html
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -19,6 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -35,14 +30,14 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.ads.BannersAds
 import com.dorin.simonsaysgame.menu.settings.FloatingActionButtonMenu
+import com.dorin.simonsaysgame.menu.settings.settings_menu.SettingsMenuEvent
 import com.dorin.simonsaysgame.menu.settings.settings_menu.floatingActionMenuOptions
 import com.dorin.simonsaysgame.ui.theme.Green
 import com.dorin.simonsaysgame.ui.theme.LightBrightBlue
 import com.dorin.simonsaysgame.ui.theme.Red
 import com.dorin.simonsaysgame.ui.theme.Yellow
 import kotlinx.coroutines.launch
-import java.io.IOException
-import java.io.InputStream
+
 
 
 @Composable
@@ -83,6 +78,23 @@ fun MenuScreen(
                 end.linkTo(parent.end, 15.dp)
                 bottom.linkTo(ads.top, 15.dp)
             })
+
+        DisplayDialog(
+            openDialog = viewModel.openAboutDialogState,
+            closeDialog = { viewModel.handleEvent(SettingsMenuEvent.About(false))  },
+            fullText = "Hello, this is Roman's application. This app was made as part of a course in android development. \n" +
+                    "Blow are all the credits and sources that was used in the making of this application.\n" +
+                    "\n" +
+                    "To do icons created by Freepik - Flaticon\n" +
+                    "Youtube guide Stevdza-San",
+            hyperLinks = mutableMapOf(
+                "Flaticon" to "https://www.148apps.com/app/1324125713/",
+                "dcancelas" to "https://github.com/dcancelas/simon-says/blob/cff578450078bd345ca4ba6d3bd63df908e70b74/app/src/main/java/com/example/simon_says/MyViewModel.kt"
+            ),
+            fontSize = 18.sp,
+            textStyle = MaterialTheme.typography.body1,
+            title = "About TODO-list"
+        )
 
 
 
@@ -270,34 +282,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
             },
             shape = MaterialTheme.shapes.small
         )
-
     }
-}
-
-fun openHtmlTextDialog(activity: Activity, fileNameInAssets: String?) {
-    var str: String? = ""
-    var `is`: InputStream? = null
-    try {
-        `is` = activity.assets.open(fileNameInAssets!!)
-        val size = `is`.available()
-        val buffer = ByteArray(size)
-        `is`.read(buffer)
-        `is`.close()
-        str = String(buffer)
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-    //val materialAlertDialogBuilder = MaterialAlertDialogBuilder(activity)
-    val materialAlertDialogBuilder = AlertDialog.Builder(activity.applicationContext)
-    materialAlertDialogBuilder.setPositiveButton("Close", null)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        materialAlertDialogBuilder.setMessage(Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY))
-    } else {
-        materialAlertDialogBuilder.setMessage(Html.fromHtml(str))
-    }
-    val al: AlertDialog = materialAlertDialogBuilder.show()
-    val alertTextView = al.findViewById<TextView>(android.R.id.message)
-    alertTextView.movementMethod = LinkMovementMethod.getInstance()
 }
 
 @Composable
@@ -308,7 +293,7 @@ fun SettingsButton(viewModel: MenuViewModel, modifier: Modifier) {
     FloatingActionButtonMenu(
         modifier = modifier,
         viewModel = viewModel,
-        menu = floatingActionMenuOptions {
+        menu = floatingActionMenuOptions(LocalContext.current) {
             coroutineScope.launch {
                 viewModel.handleEvent(it)
             }
@@ -316,6 +301,7 @@ fun SettingsButton(viewModel: MenuViewModel, modifier: Modifier) {
     )
 
 }
+
 
 
 

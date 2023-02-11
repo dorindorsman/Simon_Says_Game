@@ -16,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -48,11 +47,11 @@ class PanelGameViewModel @Inject constructor(
     var gameModeState by mutableStateOf(GameMode.EASY)
         private set
 
-    var levelState by mutableStateOf(500)
+    var levelState by mutableStateOf<Long>(500)
         private set
 
-    private val _sortState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
-    val sortState: StateFlow<RequestState<Int>> = _sortState
+    var sortState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
+        private set
 
     init {
         readEasyState()
@@ -81,12 +80,12 @@ class PanelGameViewModel @Inject constructor(
             1 -> {
                 readMediumState()
                 gameModeState = GameMode.MEDIUM
-                levelState = 400
+                levelState = 200
             }
             2 -> {
                 readHardState()
                 gameModeState = GameMode.HARD
-                levelState = 300
+                levelState = 100
             }
             else -> {
                 readEasyState()
@@ -127,10 +126,10 @@ class PanelGameViewModel @Inject constructor(
 
         // remaining number of times player can make errors
         // game over if reaches 0
-        val attemptsLeft: Int = 3,
+        var attemptsLeft: Int = 3,
 
         // indicates if the game has started yet
-        val gameRunning: Boolean = false
+        var gameRunning: Boolean = false
     )
 
     /*** Private functions ****/
@@ -169,13 +168,6 @@ class PanelGameViewModel @Inject constructor(
                         playerTurn = false
                     )
                 )
-
-                // sequence complete indicator
-//                emit(
-//                    viewState.copy(
-//                        btnStates = toggleBoard(1)
-//                    )
-//                )
                 emit(
                     viewState.copy(
                         btnStates = toggleBoard(0)
@@ -216,7 +208,7 @@ class PanelGameViewModel @Inject constructor(
 
                 // animate sequence
                 for (s in sequence) {
-                    delay(500)
+                    delay(levelState)
                     emit(
                         viewState.copy(
                             btnStates = toggleButton(s, 1)
@@ -260,7 +252,7 @@ class PanelGameViewModel @Inject constructor(
 
                 // animate sequence
                 for (s in sequence) {
-                    delay(500)
+                    delay(levelState)
                     emit(
                         viewState.copy(
                             btnStates = toggleButton(s, 1)
@@ -378,44 +370,47 @@ class PanelGameViewModel @Inject constructor(
     }
 
     private fun readEasyState() {
-        _sortState.value = RequestState.Loading
+        sortState.value = RequestState.Loading
         try {
             viewModelScope.launch {
                 dataStoreRepository.readEasyState
                     .collect {
-                        _sortState.value = RequestState.Success(it)
+                        sortState.value = RequestState.Success(it)
+                        highScore = RequestState.Success(it).data
                     }
             }
         } catch (e: Exception) {
-            _sortState.value = RequestState.Error(e)
+            sortState.value = RequestState.Error(e)
         }
     }
 
     private fun readMediumState() {
-        _sortState.value = RequestState.Loading
+        sortState.value = RequestState.Loading
         try {
             viewModelScope.launch {
                 dataStoreRepository.readMediumState
                     .collect {
-                        _sortState.value = RequestState.Success(it)
+                        sortState.value = RequestState.Success(it)
+                        highScore = RequestState.Success(it).data
                     }
             }
         } catch (e: Exception) {
-            _sortState.value = RequestState.Error(e)
+            sortState.value = RequestState.Error(e)
         }
     }
 
     private fun readHardState() {
-        _sortState.value = RequestState.Loading
+        sortState.value = RequestState.Loading
         try {
             viewModelScope.launch {
                 dataStoreRepository.readHardState
                     .collect {
-                        _sortState.value = RequestState.Success(it)
+                        sortState.value = RequestState.Success(it)
+                        highScore = RequestState.Success(it).data
                     }
             }
         } catch (e: Exception) {
-            _sortState.value = RequestState.Error(e)
+            sortState.value = RequestState.Error(e)
         }
     }
 

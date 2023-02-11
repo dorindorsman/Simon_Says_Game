@@ -1,7 +1,9 @@
 package com.dorin.simonsaysgame.menu.settings.settings_menu
 
+import android.content.Context
+
 sealed class SettingsMenuEvent {
-    object Privacy : SettingsMenuEvent()
-    object Terms : SettingsMenuEvent()
-    object About : SettingsMenuEvent()
+    class Privacy(val context: Context) : SettingsMenuEvent()
+    class Terms(val context: Context)  : SettingsMenuEvent()
+    class About(val openAboutDialogState: Boolean) : SettingsMenuEvent()
 }

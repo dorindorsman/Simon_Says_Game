@@ -1,17 +1,17 @@
 package com.dorin.simonsaysgame.menu
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.dorin.simonsaysgame.datastore.DataStoreRepository
 import com.dorin.simonsaysgame.menu.settings.FabSettingsState
 import com.dorin.simonsaysgame.menu.settings.settings_menu.SettingsMenuEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +30,8 @@ class MenuViewModel @Inject constructor(
     var fabSettingsState by mutableStateOf(FabSettingsState.DEFAULT)
     private set
 
+    var openAboutDialogState by mutableStateOf(false)
+        private set
 
     fun handleEvent(event: MenuEvent){
         Log.d(TAG, "menu event: $event")
@@ -46,9 +48,9 @@ class MenuViewModel @Inject constructor(
         Log.d(TAG, "settings event: $settingsMenuEvent")
 
         when (settingsMenuEvent) {
-            SettingsMenuEvent.Privacy -> privacyClicked()
-            SettingsMenuEvent.Terms -> termsClicked()
-            SettingsMenuEvent.About -> aboutClicked()
+            is SettingsMenuEvent.Privacy -> privacyClicked(settingsMenuEvent.context)
+            is SettingsMenuEvent.Terms -> termsClicked(settingsMenuEvent.context)
+            is SettingsMenuEvent.About -> aboutClicked(settingsMenuEvent.openAboutDialogState)
         }
         fabSettingsDismiss()
     }
@@ -68,18 +70,24 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    private fun privacyClicked() {
-        TODO("Not yet implemented")
+    private fun privacyClicked(context: Context) {
+        val url = "https://sites.google.com/view/privacy-policy-simon-game-says/%D7%91%D7%99%D7%AA"
+        openUrl(context, url)
     }
 
-    private fun termsClicked() {
-        TODO("Not yet implemented")
+    private fun termsClicked(context: Context) {
+        val url = "https://sites.google.com/view/useoftermssimongamesays/%D7%91%D7%99%D7%AA"
+        openUrl(context, url)
     }
 
-    private fun aboutClicked() {
-        TODO("Not yet implemented")
+    private fun aboutClicked(state : Boolean) {
+        openAboutDialogState = state
     }
-
-
-
+    private fun openUrl(context: Context, url: String){
+        val urlIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse(url)
+        )
+        context.startActivity(urlIntent)
+    }
 }
