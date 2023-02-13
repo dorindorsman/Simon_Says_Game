@@ -54,9 +54,9 @@ The game ends when the player makes a mistake and presses a button that did not 
  **Internal purchases**: 
  - No ads for 10 NIS
  - buy coins:
- - 1 NIS is 20 coins
+ - 3 NIS is 20 coins
  - 5 NIS is 40 coins
- - 10 NIS 60 coins
+ - 9 NIS 60 coins
 
   - Color sequence 15 coins , life is 20 coins
 
