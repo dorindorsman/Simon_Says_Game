@@ -11,7 +11,7 @@ import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.datastore.DataStoreRepository
 import com.dorin.simonsaysgame.menu.GameMode
 import com.dorin.simonsaysgame.ui.theme.*
-import com.dorin.simonsaysgame.until.RequestState
+import com.dorin.simonsaysgame.utils.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

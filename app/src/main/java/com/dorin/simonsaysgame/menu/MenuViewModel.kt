@@ -33,17 +33,19 @@ class MenuViewModel @Inject constructor(
     var openAboutDialogState by mutableStateOf(false)
         private set
 
+    var showNativeAdState by mutableStateOf(false)
+        private set
+
     fun handleEvent(event: MenuEvent){
         Log.d(TAG, "menu event: $event")
 
         when(event){
             is MenuEvent.SettingsButtonClicked -> settingsButtonClicked()
+            is MenuEvent.SetNativeAdState -> setNativeAdState(event.state)
             else -> {}
         }
 
     }
-
-
     fun handleEvent(settingsMenuEvent: SettingsMenuEvent) {
         Log.d(TAG, "settings event: $settingsMenuEvent")
 
@@ -53,6 +55,10 @@ class MenuViewModel @Inject constructor(
             is SettingsMenuEvent.About -> aboutClicked(settingsMenuEvent.openAboutDialogState)
         }
         fabSettingsDismiss()
+    }
+
+    private fun setNativeAdState(state: Boolean) {
+        showNativeAdState = state
     }
 
     private fun fabSettingsDismiss() {
@@ -81,6 +87,7 @@ class MenuViewModel @Inject constructor(
     }
 
     private fun aboutClicked(state : Boolean) {
+        Log.d(TAG, "aboutClicked: $state")
         openAboutDialogState = state
     }
     private fun openUrl(context: Context, url: String){

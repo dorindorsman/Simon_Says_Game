@@ -9,10 +9,9 @@ import androidx.navigation.NavHostController
 import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
 import com.dorin.simonsaysgame.menu.MenuViewModel
 import com.dorin.simonsaysgame.navigation.Screens
-import com.dorin.simonsaysgame.navigation.Screens.Companion.SPLASH_SCREEN
+import com.dorin.simonsaysgame.navigation.Screens.Companion.MENU_SCREEN
 import com.dorin.simonsaysgame.navigation.destination.menuComposable
 import com.dorin.simonsaysgame.navigation.destination.panelGameComposable
-import com.dorin.simonsaysgame.navigation.destination.splashComposable
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 
 
@@ -30,11 +29,8 @@ fun Navigation(
 
     AnimatedNavHost(
         navController = navController,
-        startDestination = SPLASH_SCREEN
+        startDestination = MENU_SCREEN
     ) {
-        splashComposable(
-            navigateToMenuScreen = screen.splash
-        )
         menuComposable(
             navigateToPanelGame = screen.menu,
             menuViewModel = menuViewModel

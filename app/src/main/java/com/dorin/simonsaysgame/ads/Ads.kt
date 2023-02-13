@@ -16,6 +16,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.dorin.simonsaysgame.gamepanel.PanelGameEvent
 import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
 import com.google.android.gms.ads.*
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
@@ -23,10 +25,10 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 private var TAG = "Ads"
 private var mRewardedAd: RewardedAd? = null
+private var mNativeAd: NativeAd? = null
 
 @Composable
 fun BannersAds(modifier: Modifier) {
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -93,6 +95,31 @@ fun RewardedAdsShow(context: Context, viewModel: PanelGameViewModel) {
     } else {
         Log.d(TAG, "The rewarded ad wasn't ready yet.")
     }
+}
+
+
+
+@Composable
+fun NativeAdsLoading(context: Context){
+    val adLoader = AdLoader.Builder(context as Activity, "ca-app-pub-3940256099942544/2247696110")
+        .forNativeAd { ad : NativeAd ->
+            // Show the ad.
+        }
+        .withAdListener(object : AdListener() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                // Handle the failure by logging, altering the UI, and so on.
+            }
+
+            override fun onAdLoaded() {
+
+            }
+        })
+        .withNativeAdOptions(
+            NativeAdOptions.Builder()
+            // Methods in the NativeAdOptions.Builder class can be
+            // used here to specify individual options settings.
+            .build())
+        .build()
 }
 
 

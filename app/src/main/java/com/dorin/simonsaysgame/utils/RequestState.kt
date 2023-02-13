@@ -1,4 +1,4 @@
-package com.dorin.simonsaysgame.until
+package com.dorin.simonsaysgame.utils
 
 sealed class RequestState<out T> {
     object Idle : RequestState<Nothing>()
