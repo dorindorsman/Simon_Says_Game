@@ -115,7 +115,7 @@ The game ends when the player makes a mistake and presses a button that did not 
 
 
 ## :pray: Credits
- create Logo Icon with https://create.vista.com/home/ </br>
+ create Logo Icon with https://www.groupon.com/deals/gg-simon-says-classic-retro-game </br>
  create Gif with https://giphy.com/ </br>
  Help with https://github.com/Kleanur
 
