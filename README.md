@@ -24,11 +24,11 @@ The game ends when the player makes a mistake and presses a button that did not 
 
 ## :link: Menu:
 
-- [Features](https://github.com/dorindorsman/C_Style/blob/master/README.md#space_invader-features)</br>
-- [In App Purchases](https://github.com/dorindorsman/C_Style/blob/master/README.md#iphone-screen-gifs)</br>
-- [Screen Gifs](https://github.com/dorindorsman/C_Style/blob/master/README.md#iphone-screen-gifs)</br>
-- [Future Plan](https://github.com/dorindorsman/C_Style/blob/master/README.md#pencil-future-plan)</br>
-- [Credits](https://github.com/dorindorsman/C_Style/blob/master/README.md#pray-credits)</br>
+- [Features](https://github.com/dorindorsman/Simon_Says_Game/edit/master/README.md#space_invader-features)</br>
+- [In App Purchases](https://github.com/dorindorsman/Simon_Says_Game/edit/master/README.md#moneybag-in-app-purchases)</br>
+- [Screen Gifs](https://github.com/dorindorsman/Simon_Says_Game/edit/master/README.md#iphone-screen-gifs)</br>
+- [Future Plan](https://github.com/dorindorsman/Simon_Says_Game/edit/master/README.md#pencil-future-plan)</br>
+- [Credits](https://github.com/dorindorsman/Simon_Says_Game/edit/master/README.md#pray-credits)</br>
 
 
 ## :space_invader: Features 
