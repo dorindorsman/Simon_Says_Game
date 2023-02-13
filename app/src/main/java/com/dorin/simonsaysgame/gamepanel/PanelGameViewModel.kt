@@ -1,10 +1,11 @@
 package com.dorin.simonsaysgame.gamepanel
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dorin.simonsaysgame.R
@@ -13,11 +14,8 @@ import com.dorin.simonsaysgame.menu.GameMode
 import com.dorin.simonsaysgame.ui.theme.*
 import com.dorin.simonsaysgame.utils.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -33,13 +31,19 @@ class PanelGameViewModel @Inject constructor(
     var rewardedAdsLoadingState by mutableStateOf(false)
         private set
 
+    var interstitialAdsLoadingState by mutableStateOf(false)
+        private set
+
+    var giveRewardState by mutableStateOf<RewardState>(RewardState.WAIT)
+        private set
+
     var viewState by mutableStateOf(ViewState())
         private set
 
-    var btnColorState by mutableStateOf<Color>(Green)
+    var btnColorState by mutableStateOf(Green)
         private set
 
-    var btnSoundState by mutableStateOf<Int>(R.raw.victory)
+    var btnSoundState by mutableStateOf(R.raw.victory)
         private set
 
     var highScore: Int = 0
@@ -61,8 +65,10 @@ class PanelGameViewModel @Inject constructor(
         Log.d(TAG, "game event: $event")
 
         when (event) {
-            is PanelGameEvent.SetRewardedAdsLoadingState -> rewardedAdsLoadingState = event.boolean
-            is PanelGameEvent.SetButtonColorState -> setColor(event.color)
+            is PanelGameEvent.SetRewardedAdsLoadingState -> rewardedAdsLoadingState = event.state
+            is PanelGameEvent.SetInterstitialAdsLoadingState -> interstitialAdsLoadingState = event.state
+            is PanelGameEvent.SetGiveRewardState -> giveRewardState = event.state
+            is PanelGameEvent.SetButtonColorState -> btnColorState = event.color
             is PanelGameEvent.SetButtonSound -> setSound(event.index)
             is PanelGameEvent.GameModeButtonClicked -> setGameMode(event.gameMode)
             is PanelGameEvent.SetHighScore -> setHighScore()
@@ -93,7 +99,7 @@ class PanelGameViewModel @Inject constructor(
                 levelState = 500
             }
         }
-        Log.d(TAG, gameModeState.name +" "+levelState)
+        Log.d(TAG, gameModeState.name + " " + levelState)
     }
 
     // current sequence
@@ -277,6 +283,8 @@ class PanelGameViewModel @Inject constructor(
     }
 
     // indicates input from button with specified id
+
+    @RequiresApi(Build.VERSION_CODES.O)
     fun receiveInput(id: Int) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
@@ -310,13 +318,8 @@ class PanelGameViewModel @Inject constructor(
                             replaySequence()
                         } else {
                             // game over
-                            emit(
-                                viewState.copy(
-                                    btnStates = toggleBoard(3),
-                                    playerTurn = false
-                                )
-                            )
-                            setHighScore()
+                            while (giveRewardState == RewardState.WAIT) { }
+                            checkReward()
                         }
                         delay(3000)
                     }
@@ -325,16 +328,54 @@ class PanelGameViewModel @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun checkReward() {
+        if (viewState.attemptsLeft == 0) {
+            when (giveRewardState) {
+                RewardState.SHOW -> {
+                    Log.d("dorin","dorin")
+                    sequenceIndex = 0
+                    emit(
+                        viewState.copy(
+                            btnStates = toggleBoard(0),
+                            playerTurn = false,
+                            attemptsLeft = 1
+                        )
+                    )
+                    while (rewardedAdsLoadingState){}
+                    replaySequence()
+                    giveRewardState = RewardState.SHOWED
+                }
+                RewardState.UNSHOW -> {
+                    emit(
+                        viewState.copy(
+                            btnStates = toggleBoard(3),
+                            playerTurn = false
+                        )
+                    )
+                    setHighScore()
+                }
+                RewardState.SHOWED -> {
+                    emit(
+                        viewState.copy(
+                            btnStates = toggleBoard(3),
+                            playerTurn = false
+                        )
+                    )
+                    setHighScore()
+                }
+                RewardState.WAIT -> {}
+            }
+        }
+    }
+
+
     fun reset() {
         sequence.clear()
         sequenceIndex = 0
         emit(
             ViewState()
         )
-    }
-
-    private fun setColor(color: Color) {
-        btnColorState = color
     }
 
     private fun setSound(index: Int) {
@@ -362,10 +403,16 @@ class PanelGameViewModel @Inject constructor(
             highScore = viewState.score
         }
 
-        when(gameModeState){
-            GameMode.EASY -> { persistEasyState(highScore) }
-            GameMode.MEDIUM -> { persistMediumState(highScore) }
-            GameMode.HARD -> {persistHardState(highScore) }
+        when (gameModeState) {
+            GameMode.EASY -> {
+                persistEasyState(highScore)
+            }
+            GameMode.MEDIUM -> {
+                persistMediumState(highScore)
+            }
+            GameMode.HARD -> {
+                persistHardState(highScore)
+            }
         }
     }
 
@@ -416,7 +463,7 @@ class PanelGameViewModel @Inject constructor(
 
     private fun persistEasyState(highScore: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.persistEasyState( easy = highScore)
+            dataStoreRepository.persistEasyState(easy = highScore)
         }
     }
 
@@ -431,4 +478,5 @@ class PanelGameViewModel @Inject constructor(
             dataStoreRepository.persistHardState(hard = highScore)
         }
     }
+
 }

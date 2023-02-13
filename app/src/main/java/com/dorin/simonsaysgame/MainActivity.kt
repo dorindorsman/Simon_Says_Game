@@ -82,22 +82,20 @@ class MainActivity : ComponentActivity() {
 
     private fun getOnItemClick(action: MenuAction){
         when (action) {
-            MenuAction.ABOUT ->
-                HtmlHelper.openDialog( this, "about.html")
-            MenuAction.TERMS ->
-                HtmlHelper.openDialog(this, "terms_of_use.html")
-            MenuAction.PRIVACY ->
-                HtmlHelper.openDialog(this, "privacy_policy.html")
-            MenuAction.PREMIUM ->
-            MenuAction.PURCHASE ->
-
+            MenuAction.ABOUT -> { HtmlHelper.openDialog( this, "about.html") }
+            MenuAction.TERMS -> { HtmlHelper.openDialog(this, "terms_of_use.html") }
+            MenuAction.PRIVACY -> { HtmlHelper.openDialog(this, "privacy_policy.html") }
+            MenuAction.PREMIUM -> { }
+            MenuAction.PURCHASE -> {}
         }
     }
 }
 
-
 enum class MenuAction {
     ABOUT, TERMS, PRIVACY, PREMIUM, PURCHASE
+}
+enum class UserType {
+    NORMAL, PREMIUM
 }
 
 @Preview(showBackground = true)

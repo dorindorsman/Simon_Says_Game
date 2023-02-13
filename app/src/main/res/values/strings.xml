@@ -15,4 +15,8 @@
     <string name="retry">Retry?</string>
     <string name="back_to_game_menu">Back to game menu</string>
     <string name="game_completed">Game Completed</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="reward_title">Want A Reward ? </string>
+    <string name="reward_text">Watch the following ad and get more life in the game</string>
 </resources>

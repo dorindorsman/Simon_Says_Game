@@ -38,9 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
-import com.dorin.simonsaysgame.ads.BannersAds
-import com.dorin.simonsaysgame.ads.RewardedAdsLoading
-import com.dorin.simonsaysgame.ads.RewardedAdsShow
+import com.dorin.simonsaysgame.ads.*
 import com.dorin.simonsaysgame.ui.theme.*
 
 
@@ -55,7 +53,9 @@ fun PanelGameScreen(
     val context = LocalContext.current
     var mediaPlayer = MediaPlayer.create(context, viewModel.btnSoundState)
 
+
     BackHandler(enabled = true, onBack = {
+        interstitialAd(context = context, viewModel = viewModel)
         viewModel.viewState.attemptsLeft = 0
         viewModel.reset()
         navigateToMenuScreen()
@@ -63,7 +63,6 @@ fun PanelGameScreen(
 
     //Start Button Used To Begin Game
     SimonSaysGameBoard(context, viewModel, mediaPlayer, navigateToMenuScreen)
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -140,7 +139,6 @@ fun SimonSaysGameBoard(
                 index = 0,
                 viewModel = viewModel,
                 context = context,
-                mediaPlayer = mediaPlayer
             )
 
             SimonSaysButton(
@@ -150,7 +148,6 @@ fun SimonSaysGameBoard(
                 index = 1,
                 viewModel = viewModel,
                 context = context,
-                mediaPlayer = mediaPlayer
             )
 
         }
@@ -172,7 +169,6 @@ fun SimonSaysGameBoard(
                 index = 2,
                 viewModel = viewModel,
                 context = context,
-                mediaPlayer = mediaPlayer
             )
 
             SimonSaysButton(
@@ -182,7 +178,6 @@ fun SimonSaysGameBoard(
                 index = 3,
                 viewModel = viewModel,
                 context = context,
-                mediaPlayer = mediaPlayer
             )
         }
 
@@ -210,21 +205,31 @@ fun SimonSaysGameBoard(
             bottom.linkTo(parent.bottom)
         })
 
+        RewardedAdsLoading(context, viewModel)
+
         if (viewModel.viewState.attemptsLeft == 0) {
-            RewardedAdsLoading(context, viewModel)
-            if (viewModel.rewardedAdsLoadingState) {
-                RewardedAdsShow(context, viewModel)
-                AlertDialogScreen(viewModel, navigateToMenuScreen)
+            when (viewModel.giveRewardState) {
+                RewardState.SHOW -> {
+                }
+                RewardState.UNSHOW -> {
+                    AlertDialogScreen(context, viewModel, navigateToMenuScreen)
+                }
+                RewardState.SHOWED -> {
+                    AlertDialogScreen(context, viewModel, navigateToMenuScreen)
+                }
+                RewardState.WAIT -> {
+                    RewardAlertDialogScreen(context, viewModel)
+                }
             }
         }
-
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertDialogScreen(
-    viewModel: PanelGameViewModel, navigateToMenuScreen: () -> Unit
+    context: Context, viewModel: PanelGameViewModel, navigateToMenuScreen: () -> Unit
 ) {
     AlertDialog(onDismissRequest = {},
         title = { Text(stringResource(id = R.string.game_completed)) },
@@ -235,6 +240,7 @@ fun AlertDialogScreen(
                     modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.retry), color = Color.White
                 )
             }, shape = RoundedCornerShape(16.dp), onClick = {
+                interstitialAd(context, viewModel)
                 viewModel.handleEvent(PanelGameEvent.SetHighScore)
                 viewModel.reset()
             })
@@ -245,9 +251,44 @@ fun AlertDialogScreen(
                     modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.back_to_game_menu), color = Color.White
                 )
             }, shape = RoundedCornerShape(16.dp), onClick = {
+                interstitialAd(context, viewModel)
                 viewModel.handleEvent(PanelGameEvent.SetHighScore)
                 viewModel.reset()
                 navigateToMenuScreen()
+            })
+        })
+}
+
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun RewardAlertDialogScreen(
+    context: Context,
+    viewModel: PanelGameViewModel,
+) {
+    AlertDialog(onDismissRequest = {},
+        title = { Text(stringResource(id = R.string.reward_title)) },
+        text = { Text(stringResource(id = R.string.reward_text)) },
+        confirmButton = {
+            ExtendedFloatingActionButton(text = {
+                Text(
+                    modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.yes), color = Color.White
+                )
+            }, shape = RoundedCornerShape(16.dp), onClick = {
+                if (viewModel.rewardedAdsLoadingState) {
+                    RewardedAdsShow(context, viewModel)
+                }
+                viewModel.handleEvent(PanelGameEvent.SetGiveRewardState(RewardState.SHOW))
+            })
+        },
+        dismissButton = {
+            ExtendedFloatingActionButton(text = {
+                Text(
+                    modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.no), color = Color.White
+                )
+            }, shape = RoundedCornerShape(16.dp), onClick = {
+                viewModel.handleEvent(PanelGameEvent.SetGiveRewardState(RewardState.UNSHOW))
             })
         })
 }
@@ -261,6 +302,7 @@ fun StartButton(viewModel: PanelGameViewModel) {
             .padding(vertical = 20.dp)
             .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
         onClick = {
+            viewModel.handleEvent(PanelGameEvent.SetGiveRewardState(RewardState.WAIT))
             viewModel.startRound()
         },
         text = {
@@ -283,6 +325,7 @@ fun StartButton(viewModel: PanelGameViewModel) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SimonSaysButton(
@@ -292,7 +335,6 @@ fun SimonSaysButton(
     index: Int,
     viewModel: PanelGameViewModel,
     context: Context,
-    mediaPlayer: MediaPlayer
 ) {
 
     //Animation Variables
@@ -304,8 +346,6 @@ fun SimonSaysButton(
     val pt = viewModel.viewState.playerTurn
     var btnColorState = remember { mutableStateOf(color) }
 
-    //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(color))
-    //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
 
     //Sounds Variable
     var buttonSound = when (color) {
@@ -331,43 +371,54 @@ fun SimonSaysButton(
     //mediaPlayer.playbackParams.setAudioFallbackMode(buttonSound)
     val mediaPlayer = MediaPlayer.create(context, buttonSound)
 
-    Button(onClick = {}, shape = shape, modifier = Modifier
-        .padding(5.dp)
-        .size(150.dp)
-        .scale(scale.value)
-        .pointerInteropFilter {
-            when (it.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    if (pt) {
-                        selected.value = true
-                        btnColorState.value = pressColor
-                        //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
-                        //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(pressColor))
+    Button(
+        onClick = {}, shape = shape, modifier = Modifier
+            .padding(5.dp)
+            .size(150.dp)
+            .scale(scale.value)
+            .pointerInteropFilter {
+                when (it.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        if (pt) {
+                            selected.value = true
+                            btnColorState.value = pressColor
+                            //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
+                            //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(pressColor))
+                        }
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        if (pt) {
+                            selected.value = false
+                            btnColorState.value = color
+                            viewModel.receiveInput(index)
+                            //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
+                            //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(color))
+                        }
                     }
                 }
-                MotionEvent.ACTION_UP -> {
-                    if (pt) {
-                        selected.value = false
-                        btnColorState.value = color
-                        viewModel.receiveInput(index)
-                        //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
-                        //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(color))
-                    }
-                }
-            }
-            true
-        }, colors = ButtonDefaults.buttonColors(containerColor = btnColorState.value)
+                true
+            }, colors = ButtonDefaults.buttonColors(containerColor = btnColorState.value)
     ) {
         if (btnColorState.value == pressColor || viewModel.viewState.btnStates[index] == 2 || viewModel.viewState.btnStates[index] == 3) {
-
             try {
                 mediaPlayer.start()
-            }catch (e : Exception){
-                Log.e("dorin",e.message.toString())
+            } catch (e: Exception) {
+                Log.e("dorin", e.message.toString())
             }
-
         }
     }
+}
+
+fun interstitialAd(context: Context, viewModel: PanelGameViewModel) {
+    InterstitialAdlLoading(context = context)
+    if (mInterstitialAd != null) {
+        InterstitialAdShow(context)
+        viewModel.handleEvent(PanelGameEvent.SetInterstitialAdsLoadingState(false))
+    }
+}
+
+enum class RewardState {
+    SHOWED, SHOW, UNSHOW, WAIT
 }
 
 @Preview

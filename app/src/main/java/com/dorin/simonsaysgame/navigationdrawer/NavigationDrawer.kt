@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dorin.simonsaysgame.menu.TitleText
 
-
 @Composable
 fun DrawerHeader() {
     Box(
@@ -26,7 +25,6 @@ fun DrawerHeader() {
         TitleText(Modifier
             .fillMaxWidth(), 30.sp)
     }
-
 }
 
 @Composable

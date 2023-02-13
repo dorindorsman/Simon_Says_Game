@@ -14,7 +14,6 @@ import com.dorin.simonsaysgame.navigation.destination.menuComposable
 import com.dorin.simonsaysgame.navigation.destination.panelGameComposable
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 @Composable

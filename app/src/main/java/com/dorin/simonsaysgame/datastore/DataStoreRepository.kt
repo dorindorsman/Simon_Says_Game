@@ -28,12 +28,14 @@ class DataStoreRepository @Inject constructor(
         const val PREFERENCE_KEY_EASY = "easy_score_state"
         const val PREFERENCE_KEY_MEDIUM = "medium_score_state"
         const val PREFERENCE_KEY_HARD = "hard_score_state"
+        const val PREFERENCE_KEY_USER_TYPE = "user_type_state"
     }
 
     private object PreferenceKeys {
         val easyKey = intPreferencesKey(name = PREFERENCE_KEY_EASY)
         val mediumKey = intPreferencesKey(name = PREFERENCE_KEY_MEDIUM)
         val hardKey = intPreferencesKey(name = PREFERENCE_KEY_HARD)
+        val userTypeKey = intPreferencesKey(name = PREFERENCE_KEY_USER_TYPE)
     }
 
     private val dataStore = context.dataStore
@@ -83,6 +85,26 @@ class DataStoreRepository @Inject constructor(
     }
 
     val readHardState : Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw  exception
+            }
+        }
+        .map { preferences ->
+            val hardState = preferences[PreferenceKeys.hardKey] ?: 0
+            hardState
+        }
+
+
+    suspend fun persistUserTypeState(hard: Int) {
+        dataStore.edit { preference ->
+            preference[PreferenceKeys.hardKey] = hard
+        }
+    }
+
+    val readUserTypeState : Flow<Int> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())

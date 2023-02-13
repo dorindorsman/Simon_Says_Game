@@ -24,7 +24,9 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
 import com.dorin.simonsaysgame.ads.BannersAds
-import com.dorin.simonsaysgame.ads.NativeAdsLoading
+import com.dorin.simonsaysgame.ads.InterstitialAdShow
+import com.dorin.simonsaysgame.ads.InterstitialAdlLoading
+import com.dorin.simonsaysgame.ads.mInterstitialAd
 
 
 @Composable
@@ -32,7 +34,6 @@ fun MenuScreen(
     navigateToPanelGame: (GameMode) -> Unit,
     viewModel: MenuViewModel
 ) {
-
     val context = LocalContext.current
 
     ConstraintLayout(
@@ -65,13 +66,6 @@ fun MenuScreen(
             context = context
         )
 
-//        SettingsButton(viewModel = viewModel, modifier = Modifier
-//            .constrainAs(settingsButton) {
-//                end.linkTo(parent.end, 15.dp)
-//                bottom.linkTo(ads.top, 15.dp)
-//            })
-
-
         BannersAds(modifier = Modifier.constrainAs(ads) {
             linkTo(
                 start = parent.start,
@@ -79,11 +73,6 @@ fun MenuScreen(
             )
             bottom.linkTo(parent.bottom)
         })
-
-        if (viewModel.showNativeAdState) {
-            NativeAdsLoading(context = context)
-            viewModel.handleEvent(MenuEvent.SetNativeAdState(true))
-        }
 
     }
 }
@@ -101,6 +90,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
+                interstitialAd(context, viewModel)
                 navigateToPanelGame(GameMode.EASY)
             },
             text = {
@@ -135,6 +125,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
+                interstitialAd(context, viewModel)
                 navigateToPanelGame(GameMode.MEDIUM)
             },
             text = {
@@ -169,7 +160,7 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
-                viewModel.handleEvent(MenuEvent.SetNativeAdState(true))
+                interstitialAd(context, viewModel)
                 navigateToPanelGame(GameMode.HARD)
             },
             text = {
@@ -198,23 +189,13 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
     }
 }
 
-
-//@Composable
-//fun SettingsButton(viewModel: MenuViewModel, modifier: Modifier) {
-//
-//    val coroutineScope = rememberCoroutineScope()
-//
-//    FloatingActionButtonMenu(
-//        modifier = modifier,
-//        viewModel = viewModel,
-//        menu = floatingActionMenuOptions(LocalContext.current) {
-//            coroutineScope.launch {
-//                viewModel.handleEvent(it)
-//            }
-//        }
-//    )
-//
-//}
+fun interstitialAd(context: Context, viewModel: MenuViewModel) {
+    InterstitialAdlLoading(context = context)
+    if(mInterstitialAd != null){
+        InterstitialAdShow(context)
+        viewModel.handleEvent(MenuEvent.SetInterstitialAdsLoadingState(false))
+    }
+}
 
 
 @Preview

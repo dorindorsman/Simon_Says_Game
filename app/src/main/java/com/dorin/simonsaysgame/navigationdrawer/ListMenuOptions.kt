@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import com.dorin.simonsaysgame.MenuAction
 import com.dorin.simonsaysgame.R
 
-
 @Composable
 fun ListMenuOptions(): List<MenuItem> {
     return listOf(

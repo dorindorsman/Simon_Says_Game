@@ -16,56 +16,48 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.dorin.simonsaysgame.gamepanel.PanelGameEvent
 import com.dorin.simonsaysgame.gamepanel.PanelGameViewModel
 import com.google.android.gms.ads.*
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
+    private var TAG = "Ads"
+    var mRewardedAd: RewardedAd? = null
+    var mInterstitialAd: InterstitialAd? = null
 
-private var TAG = "Ads"
-private var mRewardedAd: RewardedAd? = null
-private var mNativeAd: NativeAd? = null
+    @Composable
+    fun BannersAds(modifier: Modifier) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(Color.Black)
+        ) {
+            // on below line adding a spacer.
+            Spacer(modifier = modifier.height(30.dp))
 
-@Composable
-fun BannersAds(modifier: Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-    ) {
-        // on below line adding a spacer.
-        Spacer(modifier = modifier.height(30.dp))
-
-        // on below line adding admob banner ads.
-        AndroidView(
-            // on below line specifying width for ads.
-            modifier = modifier.fillMaxWidth(),
-            factory = { context ->
-                // on below line specifying ad view.
-                AdView(context).apply {
-                    // on below line specifying ad size
-                    this.setAdSize(AdSize.BANNER)
-                    // on below line specifying ad unit id
-                    // currently added a test ad unit id.
-                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                    // calling load ad to load our ad.
-                    loadAd(AdRequest.Builder().build())
-                }
-            }
-        )
+            // on below line adding admob banner ads.
+            AndroidView(
+                // on below line specifying width for ads.
+                modifier = modifier.fillMaxWidth(), factory = { context ->
+                    // on below line specifying ad view.
+                    AdView(context).apply {
+                        // on below line specifying ad size
+                        this.setAdSize(AdSize.BANNER)
+                        // on below line specifying ad unit id
+                        // currently added a test ad unit id.
+                        adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                        // calling load ad to load our ad.
+                        loadAd(AdRequest.Builder().build())
+                    }
+                })
+        }
     }
-}
 
 
-@Composable
-fun RewardedAdsLoading(context: Context, viewModel: PanelGameViewModel) {
-    val adRequest = AdRequest.Builder().build()
-    RewardedAd.load(
-        context,
-        "ca-app-pub-3940256099942544/5224354917",
-        adRequest,
-        object : RewardedAdLoadCallback() {
+    fun RewardedAdsLoading(context: Context, viewModel: PanelGameViewModel) {
+        val adRequest = AdRequest.Builder().build()
+        RewardedAd.load(context, "ca-app-pub-3940256099942544/5224354917", adRequest, object : RewardedAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 Log.d(TAG, adError.toString())
                 mRewardedAd = null
@@ -73,53 +65,62 @@ fun RewardedAdsLoading(context: Context, viewModel: PanelGameViewModel) {
 
             override fun onAdLoaded(rewardedAd: RewardedAd) {
                 Log.d(TAG, "Ad was loaded.")
-                mRewardedAd = rewardedAd
                 viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(true))
+                mRewardedAd = rewardedAd
             }
         })
-}
-
-
-@Composable
-fun RewardedAdsShow(context: Context, viewModel: PanelGameViewModel) {
-    if (mRewardedAd != null) {
-        mRewardedAd?.show(context as Activity, OnUserEarnedRewardListener() {
-            fun onUserEarnedReward(rewardItem: RewardItem) {
-                var rewardAmount = rewardItem.amount
-                var rewardType = rewardItem.type
-                Log.d(TAG, "User earned the reward.")
-                viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(false))
-                //mRewardedAd = null
-            }
-        })
-    } else {
-        Log.d(TAG, "The rewarded ad wasn't ready yet.")
     }
-}
 
 
+    fun RewardedAdsShow(context: Context, viewModel: PanelGameViewModel) {
 
-@Composable
-fun NativeAdsLoading(context: Context){
-    val adLoader = AdLoader.Builder(context as Activity, "ca-app-pub-3940256099942544/2247696110")
-        .forNativeAd { ad : NativeAd ->
-            // Show the ad.
+        if (mRewardedAd != null) {
+            mRewardedAd?.show(context as Activity, OnUserEarnedRewardListener {
+                fun onUserEarnedReward(rewardItem: RewardItem) {
+                    var rewardAmount = rewardItem.amount
+                    var rewardType = rewardItem.type
+                    Log.d("TAG", "User earned the reward.")
+                    viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(false))
+                    mRewardedAd = null
+                }
+                onUserEarnedReward(it)
+            })
+
+        } else {
+            Log.d(TAG, "The rewarded ad wasn't ready yet.")
         }
-        .withAdListener(object : AdListener() {
+    }
+
+
+    fun InterstitialAdlLoading(context: Context) {
+        val adRequest = AdRequest.Builder().build()
+
+        InterstitialAd.load(context, "ca-app-pub-3940256099942544/1033173712", adRequest, object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                // Handle the failure by logging, altering the UI, and so on.
+                Log.d(TAG, "Ad was failed to loaded .")
+                adError?.toString()?.let { Log.d(TAG, it) }
+                mInterstitialAd = null
+
             }
 
-            override fun onAdLoaded() {
-
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                Log.d(TAG, "Ad was loaded .")
+                mInterstitialAd = interstitialAd
             }
         })
-        .withNativeAdOptions(
-            NativeAdOptions.Builder()
-            // Methods in the NativeAdOptions.Builder class can be
-            // used here to specify individual options settings.
-            .build())
-        .build()
-}
+    }
+
+    fun InterstitialAdShow(context: Context) {
+        if (mInterstitialAd != null) {
+            mInterstitialAd?.show(context as Activity)
+            mInterstitialAd = null
+        } else {
+            Log.d(TAG, "The interstitial ad wasn't ready yet.")
+        }
+    }
+
+
+
+
 
 
