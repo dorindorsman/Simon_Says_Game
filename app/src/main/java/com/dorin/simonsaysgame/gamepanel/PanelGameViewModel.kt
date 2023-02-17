@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dorin.simonsaysgame.R
+import com.dorin.simonsaysgame.UserType
 import com.dorin.simonsaysgame.datastore.DataStoreRepository
 import com.dorin.simonsaysgame.menu.GameMode
 import com.dorin.simonsaysgame.ui.theme.*
@@ -48,6 +49,9 @@ class PanelGameViewModel @Inject constructor(
 
     var highScore: Int = 0
 
+    var coins by mutableStateOf(0)
+        private set
+
     var gameModeState by mutableStateOf(GameMode.EASY)
         private set
 
@@ -57,8 +61,30 @@ class PanelGameViewModel @Inject constructor(
     var sortState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
         private set
 
+    var userTypeState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
+        private set
+
+    var userType by mutableStateOf(UserType.NORMAL)
+        private set
+
+    var hintState by mutableStateOf(false)
+        private set
+
+    var userPurchaseState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
+        private set
+
+    var userAdsState = MutableStateFlow<RequestState<Int>>(RequestState.Idle)
+        private set
+
+    var showAdsState by mutableStateOf(true)
+        private set
+
     init {
         readEasyState()
+        readUserTypeState()
+        readUserPurchaseState()
+        readUserAdsState()
+
     }
 
     fun handleEvent(event: PanelGameEvent) {
@@ -72,7 +98,8 @@ class PanelGameViewModel @Inject constructor(
             is PanelGameEvent.SetButtonSound -> setSound(event.index)
             is PanelGameEvent.GameModeButtonClicked -> setGameMode(event.gameMode)
             is PanelGameEvent.SetHighScore -> setHighScore()
-            else -> {}
+            is PanelGameEvent.AskForHint -> askForHint()
+            is PanelGameEvent.AskForLive -> askForLive()
         }
     }
 
@@ -132,10 +159,11 @@ class PanelGameViewModel @Inject constructor(
 
         // remaining number of times player can make errors
         // game over if reaches 0
-        var attemptsLeft: Int = 3,
+        var attemptsLeft: Int = 1,
 
         // indicates if the game has started yet
         var gameRunning: Boolean = false
+
     )
 
     /*** Private functions ****/
@@ -245,7 +273,6 @@ class PanelGameViewModel @Inject constructor(
         // prepare sequence
         extendSequence()
         sequenceIndex = 0
-
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 // disable player input
@@ -295,10 +322,11 @@ class PanelGameViewModel @Inject constructor(
                             // end of sequence
                             emit(
                                 viewState.copy(
-                                    score = viewState.score + 1,
+                                    score = viewState.score + 1 ,
                                     btnStates = toggleBoard(2)
                                 )
                             )
+                            coins += 2
                             delay(3000)
                             newRound()
                         } else {
@@ -318,7 +346,8 @@ class PanelGameViewModel @Inject constructor(
                             replaySequence()
                         } else {
                             // game over
-                            while (giveRewardState == RewardState.WAIT) { }
+                            while (giveRewardState == RewardState.WAIT) {
+                            }
                             checkReward()
                         }
                         delay(3000)
@@ -333,7 +362,6 @@ class PanelGameViewModel @Inject constructor(
         if (viewState.attemptsLeft == 0) {
             when (giveRewardState) {
                 RewardState.SHOW -> {
-                    Log.d("dorin","dorin")
                     sequenceIndex = 0
                     emit(
                         viewState.copy(
@@ -342,7 +370,8 @@ class PanelGameViewModel @Inject constructor(
                             attemptsLeft = 1
                         )
                     )
-                    while (rewardedAdsLoadingState){}
+                    while (rewardedAdsLoadingState) {
+                    }
                     replaySequence()
                     giveRewardState = RewardState.SHOWED
                 }
@@ -354,6 +383,7 @@ class PanelGameViewModel @Inject constructor(
                         )
                     )
                     setHighScore()
+                    persistUserCoinsState(coins)
                 }
                 RewardState.SHOWED -> {
                     emit(
@@ -363,9 +393,39 @@ class PanelGameViewModel @Inject constructor(
                         )
                     )
                     setHighScore()
+                    persistUserCoinsState(coins)
                 }
                 RewardState.WAIT -> {}
             }
+        }
+    }
+
+    private fun askForHint() {
+        if (userType == UserType.PREMIUM) {
+            if (hintState) {
+                replaySequence()
+                hintState = false
+            }
+        }
+
+        if(coins >= 15){
+            replaySequence()
+            persistUserCoinsState(coins-15)
+            readUserPurchaseState()
+            hintState = coins >= 15
+        }
+    }
+
+    private fun askForLive() {
+        if(coins >= 20){
+            persistUserCoinsState(coins-20)
+            emit(
+                viewState.copy(
+                    attemptsLeft = viewState.attemptsLeft + 1
+                )
+            )
+            Log.d("dorin 427 model", viewState.attemptsLeft.toString())
+            readUserPurchaseState()
         }
     }
 
@@ -476,6 +536,74 @@ class PanelGameViewModel @Inject constructor(
     private fun persistHardState(highScore: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.persistHardState(hard = highScore)
+        }
+    }
+
+    private fun readUserTypeState() {
+        userTypeState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readUserTypeState
+                    .collect {
+                        userTypeState.value = RequestState.Success(it)
+                        userType = if (RequestState.Success(it).data == 1) {
+                            hintState = true
+                            emit(
+                                viewState.copy(
+                                    attemptsLeft = 3
+                                )
+                            )
+                            UserType.PREMIUM
+                        } else {
+                            hintState = false
+
+                            emit(
+                                viewState.copy(
+                                    attemptsLeft = 1
+                                )
+                            )
+                            UserType.NORMAL
+                        }
+                    }
+            }
+        } catch (e: Exception) {
+            userTypeState.value = RequestState.Error(e)
+        }
+    }
+
+    private fun readUserPurchaseState() {
+        userPurchaseState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readUserPurchaseState
+                    .collect {
+                        userPurchaseState.value = RequestState.Success(it)
+                        coins = RequestState.Success(it).data
+                    }
+            }
+        } catch (e: Exception) {
+            userPurchaseState.value = RequestState.Error(e)
+        }
+    }
+
+    private fun persistUserCoinsState(coins: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistUserCoinsState(coins = coins)
+        }
+    }
+
+    private fun readUserAdsState() {
+        userAdsState.value = RequestState.Loading
+        try {
+            viewModelScope.launch {
+                dataStoreRepository.readUserAdsState
+                    .collect {
+                        userAdsState.value = RequestState.Success(it)
+                        showAdsState = RequestState.Success(it).data == 1
+                    }
+            }
+        } catch (e: Exception) {
+            userAdsState.value = RequestState.Error(e)
         }
     }
 

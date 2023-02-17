@@ -29,6 +29,8 @@ class DataStoreRepository @Inject constructor(
         const val PREFERENCE_KEY_MEDIUM = "medium_score_state"
         const val PREFERENCE_KEY_HARD = "hard_score_state"
         const val PREFERENCE_KEY_USER_TYPE = "user_type_state"
+        const val PREFERENCE_KEY_USER_PURCHASE = "user_purchase_state"
+        const val PREFERENCE_KEY_USER_ADS = "user_ads_state"
     }
 
     private object PreferenceKeys {
@@ -36,6 +38,8 @@ class DataStoreRepository @Inject constructor(
         val mediumKey = intPreferencesKey(name = PREFERENCE_KEY_MEDIUM)
         val hardKey = intPreferencesKey(name = PREFERENCE_KEY_HARD)
         val userTypeKey = intPreferencesKey(name = PREFERENCE_KEY_USER_TYPE)
+        val userPurchaseKey = intPreferencesKey(name = PREFERENCE_KEY_USER_PURCHASE)
+        val userAdsKey = intPreferencesKey(name = PREFERENCE_KEY_USER_ADS)
     }
 
     private val dataStore = context.dataStore
@@ -98,9 +102,9 @@ class DataStoreRepository @Inject constructor(
         }
 
 
-    suspend fun persistUserTypeState(hard: Int) {
+    suspend fun persistUserTypeState(type: Int) {
         dataStore.edit { preference ->
-            preference[PreferenceKeys.hardKey] = hard
+            preference[PreferenceKeys.userTypeKey] = type
         }
     }
 
@@ -113,8 +117,59 @@ class DataStoreRepository @Inject constructor(
             }
         }
         .map { preferences ->
-            val hardState = preferences[PreferenceKeys.hardKey] ?: 0
-            hardState
+            val userTypeState = preferences[PreferenceKeys.userTypeKey] ?: 0
+            userTypeState
+        }
+
+    suspend fun persistUserAdsState(ads: Int) {
+        dataStore.edit { preference ->
+            preference[PreferenceKeys.userAdsKey] = ads
+        }
+    }
+
+    val readUserAdsState : Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw  exception
+            }
+        }
+        .map { preferences ->
+            val userAdsState = preferences[PreferenceKeys.userAdsKey] ?: 1
+            userAdsState
+        }
+    suspend fun persistUserCoinsState(coins: Int) {
+        dataStore.edit { preference ->
+            preference[PreferenceKeys.userPurchaseKey] = coins
+        }
+    }
+
+    suspend fun persistUserPurchaseState(purchase: Int, coins: Int) {
+
+        var amount = 0
+        when(purchase){
+            1-> {amount = 20}
+            2 -> {amount = 40}
+            3 -> {amount = 60}
+        }
+
+        dataStore.edit { preference ->
+            preference[PreferenceKeys.userPurchaseKey] = coins + amount
+        }
+    }
+
+    val readUserPurchaseState : Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw  exception
+            }
+        }
+        .map { preferences ->
+            val userPurchaseState = preferences[PreferenceKeys.userPurchaseKey] ?: 0
+            userPurchaseState
         }
 
 }

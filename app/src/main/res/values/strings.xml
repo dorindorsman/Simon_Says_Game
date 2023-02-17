@@ -7,16 +7,33 @@
     <string name="terms_of_service">Terms Of Service</string>
     <string name="about">About</string>
     <string name="premium">Go Premium</string>
+    <string name="unpremium">Unsubscribe Premium</string>
     <string name="purchase">Buy Purchase</string>
+    <string name="unpurchase">Unsubscribe Purchase</string>
     <string name="easy">Easy</string>
     <string name="medium">Medium</string>
     <string name="hard">Hard</string>
     <string name="play">PLAY GAME</string>
     <string name="retry">Retry?</string>
-    <string name="back_to_game_menu">Back to game menu</string>
+    <string name="back_to_game_menu">Back To Game Menu</string>
     <string name="game_completed">Game Completed</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
-    <string name="reward_title">Want A Reward ? </string>
+    <string name="reward_title">Want A Reward?</string>
     <string name="reward_text">Watch the following ad and get more life in the game</string>
+    <string name="premium_title">Want To Go PREMIUM?</string>
+    <string name="premium_text">Pay Only 5$ A Month And Get:</string>
+    <string name="premium_text1">    - 1 Clue Each Game</string>
+    <string name="premium_text2">    - 3 Lives Each Game</string>
+    <string name="premium_text3">    - Multiple Difficulty Levels</string>
+    <string name="hint">HINT</string>
+    <string name="unpremium_title">Cancel PREMIUM?</string>
+    <string name="unpremium_text">Are you sure you want to unsubscribe?</string>
+    <string name="purchase_title">Purchase Programs</string>
+    <string name="purchase_no_ads">No ads for 5$.</string>
+    <string name="purchase_p1">20 coins for 3$</string>
+    <string name="purchase_p2">40 coins for 5$</string>
+    <string name="purchase_p3">60 coins for 9$</string>
+    <string name="purchase_little">Color sequence 15 coins , Life is 20 coins</string>
+
 </resources>

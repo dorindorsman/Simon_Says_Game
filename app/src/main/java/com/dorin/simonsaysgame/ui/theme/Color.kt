@@ -54,8 +54,10 @@ val Yellow = Color(0xFFFFFF00)
 val PressedYellow = Color(0x85FFFF00)
 val LightBrightBlue = Color(0xFF2196F3)
 val PressedLightBrightBlue = Color(0x7C2196F3)
+val PressedBlack = Color(0x25000000)
 
-val btnColors = listOf<Color>(Green,PressedGreen,Red,PressedRed,Yellow,PressedYellow,LightBrightBlue,PressedLightBrightBlue)
+
+val btnColors = listOf<Color>(Green,PressedGreen,Red,PressedRed,Yellow,PressedYellow,LightBrightBlue,PressedLightBrightBlue, PressedBlack)
 
 
 val Colors.SplashScreenBackground: Color

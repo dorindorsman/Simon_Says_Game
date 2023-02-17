@@ -1,19 +1,31 @@
 package com.dorin.simonsaysgame.navigationdrawer
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import com.dorin.simonsaysgame.MenuAction
 import com.dorin.simonsaysgame.R
+import com.dorin.simonsaysgame.UserType
+import com.dorin.simonsaysgame.menu.MenuViewModel
 
 @Composable
-fun ListMenuOptions(): List<MenuItem> {
+fun ListMenuOptions(menuViewModel: MenuViewModel): List<MenuItem> {
+    Log.d("dorin", menuViewModel.userType.name)
     return listOf(
-        MenuItem(
-            icon = Icons.Default.Star,
-            title = R.string.premium,
-            id = MenuAction.PREMIUM
-        ),
+        if (menuViewModel.userType == UserType.NORMAL) {
+            MenuItem(
+                icon = Icons.Default.Star,
+                title = R.string.premium,
+                id = MenuAction.PREMIUM
+            )
+        } else {
+            MenuItem(
+                icon = Icons.Default.Star,
+                title = R.string.unpremium,
+                id = MenuAction.UNPREMIUM
+            )
+        },
         MenuItem(
             icon = Icons.Default.ShoppingCart,
             title = R.string.purchase,

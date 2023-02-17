@@ -24,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
+import com.dorin.simonsaysgame.UserType
 import com.dorin.simonsaysgame.ads.*
 import com.dorin.simonsaysgame.ui.theme.*
 
@@ -51,18 +53,18 @@ fun PanelGameScreen(
 
     //Define Needed Variables
     val context = LocalContext.current
-    var mediaPlayer = MediaPlayer.create(context, viewModel.btnSoundState)
-
 
     BackHandler(enabled = true, onBack = {
-        interstitialAd(context = context, viewModel = viewModel)
+        if (viewModel.showAdsState) {
+            interstitialAd(context = context, viewModel = viewModel)
+        }
         viewModel.viewState.attemptsLeft = 0
         viewModel.reset()
         navigateToMenuScreen()
     })
 
     //Start Button Used To Begin Game
-    SimonSaysGameBoard(context, viewModel, mediaPlayer, navigateToMenuScreen)
+    SimonSaysGameBoard(context, viewModel, navigateToMenuScreen)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -70,7 +72,6 @@ fun PanelGameScreen(
 fun SimonSaysGameBoard(
     context: Context,
     viewModel: PanelGameViewModel,
-    mediaPlayer: MediaPlayer,
     navigateToMenuScreen: () -> Unit
 ) {
     ConstraintLayout(
@@ -80,7 +81,7 @@ fun SimonSaysGameBoard(
             .padding(15.dp)
     ) {
 
-        val (highScore, liveScore, btnTop, btnBottom, circle, ads) = createRefs()
+        val (highScore, liveScore, btnTop, btnBottom, circle, hint, color, heart, ads) = createRefs()
 
         Row(horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -97,6 +98,13 @@ fun SimonSaysGameBoard(
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                 )
+                Spacer(modifier = Modifier.width(30.dp))
+                Text(
+                    text = "Coins: ${viewModel.coins}",
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
@@ -112,11 +120,17 @@ fun SimonSaysGameBoard(
                 StartButton(viewModel)
             } else {
                 Text(
-                    text = "Lives: ${viewModel.viewState.attemptsLeft}", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold
+                    text = "Lives: ${viewModel.viewState.attemptsLeft}".also { Log.d("dorin 123 screen",viewModel.viewState.attemptsLeft.toString()) },
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.width(30.dp))
                 Text(
-                    text = "Score: ${viewModel.viewState.score}", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold
+                    text = "Score: ${viewModel.viewState.score}",
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -128,7 +142,7 @@ fun SimonSaysGameBoard(
                     start = parent.start,
                     end = parent.end,
                 )
-                top.linkTo(liveScore.top, 180.dp)
+                top.linkTo(liveScore.top, 120.dp)
             }) {
 
 
@@ -198,15 +212,61 @@ fun SimonSaysGameBoard(
             )
         }
 
-        BannersAds(modifier = Modifier.constrainAs(ads) {
-            linkTo(
-                start = parent.start, end = parent.end
-            )
-            bottom.linkTo(parent.bottom)
-        })
+        if (viewModel.viewState.gameRunning) {
+            FloatingActionButton(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(20.dp))
+                    .constrainAs(hint) {
+                        top.linkTo(btnBottom.bottom, 35.dp)
+                        end.linkTo(parent.end, 25.dp)
+                    }
+                    .size(50.dp)
+                    .alpha(checkCoinsAndPremium(viewModel)),
+                shape = RoundedCornerShape(150.dp),
+                onClick = {
+                    viewModel.handleEvent(PanelGameEvent.AskForHint)
+                },
+                backgroundColor = Color.Black,
+            ) {
+                Icon(painter = painterResource(id = R.drawable.ic_lightbulb), contentDescription = null, tint = Color.White)
+            }
+
+            FloatingActionButton(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(20.dp))
+                    .constrainAs(heart) {
+                        top.linkTo(btnBottom.bottom, 35.dp)
+                        end.linkTo(hint.start, 25.dp)
+                    }
+                    .size(50.dp)
+                    .alpha(checkCoins(viewModel, 20)),
+                shape = RoundedCornerShape(150.dp),
+                onClick = {
+                    viewModel.handleEvent(PanelGameEvent.AskForLive)
+                },
+                backgroundColor = Color.Black,
+            ) {
+                Icon(painter = painterResource(id = R.drawable.ic_favorite), contentDescription = null, tint = Color.White)
+            }
+
+        }
+
+
+
+        if (viewModel.showAdsState) {
+            BannersAds(modifier = Modifier.constrainAs(ads) {
+                linkTo(
+                    start = parent.start, end = parent.end
+                )
+                bottom.linkTo(parent.bottom)
+                top.linkTo(hint.bottom, 25.dp)
+            })
+        }
+
 
         RewardedAdsLoading(context, viewModel)
-
         if (viewModel.viewState.attemptsLeft == 0) {
             when (viewModel.giveRewardState) {
                 RewardState.SHOW -> {
@@ -222,6 +282,7 @@ fun SimonSaysGameBoard(
                 }
             }
         }
+
     }
 }
 
@@ -240,7 +301,9 @@ fun AlertDialogScreen(
                     modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.retry), color = Color.White
                 )
             }, shape = RoundedCornerShape(16.dp), onClick = {
-                interstitialAd(context, viewModel)
+                if (viewModel.showAdsState) {
+                    interstitialAd(context = context, viewModel = viewModel)
+                }
                 viewModel.handleEvent(PanelGameEvent.SetHighScore)
                 viewModel.reset()
             })
@@ -251,14 +314,15 @@ fun AlertDialogScreen(
                     modifier = Modifier.wrapContentSize(), text = stringResource(id = R.string.back_to_game_menu), color = Color.White
                 )
             }, shape = RoundedCornerShape(16.dp), onClick = {
-                interstitialAd(context, viewModel)
+                if (viewModel.showAdsState) {
+                    interstitialAd(context = context, viewModel = viewModel)
+                }
                 viewModel.handleEvent(PanelGameEvent.SetHighScore)
                 viewModel.reset()
                 navigateToMenuScreen()
             })
         })
 }
-
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -278,8 +342,8 @@ fun RewardAlertDialogScreen(
             }, shape = RoundedCornerShape(16.dp), onClick = {
                 if (viewModel.rewardedAdsLoadingState) {
                     RewardedAdsShow(context, viewModel)
+                    viewModel.handleEvent(PanelGameEvent.SetGiveRewardState(RewardState.SHOW))
                 }
-                viewModel.handleEvent(PanelGameEvent.SetGiveRewardState(RewardState.SHOW))
             })
         },
         dismissButton = {
@@ -416,6 +480,27 @@ fun interstitialAd(context: Context, viewModel: PanelGameViewModel) {
         viewModel.handleEvent(PanelGameEvent.SetInterstitialAdsLoadingState(false))
     }
 }
+
+fun checkCoinsAndPremium(viewModel: PanelGameViewModel): Float {
+    if (viewModel.userType == UserType.PREMIUM) {
+        if (viewModel.hintState) {
+            return 1f
+        }
+    }
+    if (viewModel.coins >= 15) {
+            return 1f
+    }
+    return 0.2f
+}
+
+fun checkCoins(viewModel: PanelGameViewModel, amount: Int): Float {
+    if (viewModel.coins >= amount) {
+            return 1f
+
+    }
+    return 0.2f
+}
+
 
 enum class RewardState {
     SHOWED, SHOW, UNSHOW, WAIT

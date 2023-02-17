@@ -12,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -23,10 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.dorin.simonsaysgame.R
+import com.dorin.simonsaysgame.UserType
 import com.dorin.simonsaysgame.ads.BannersAds
 import com.dorin.simonsaysgame.ads.InterstitialAdShow
 import com.dorin.simonsaysgame.ads.InterstitialAdlLoading
 import com.dorin.simonsaysgame.ads.mInterstitialAd
+import com.dorin.simonsaysgame.ui.theme.PressedBlack
 
 
 @Composable
@@ -41,7 +44,7 @@ fun MenuScreen(
             .background(Color.Black)
             .fillMaxSize()
     ) {
-        val (title, menuContent, settingsButton, ads) = createRefs()
+        val (title, menuContent, ads) = createRefs()
 
         TitleText(Modifier
             .constrainAs(title) {
@@ -66,13 +69,16 @@ fun MenuScreen(
             context = context
         )
 
-        BannersAds(modifier = Modifier.constrainAs(ads) {
-            linkTo(
-                start = parent.start,
-                end = parent.end
-            )
-            bottom.linkTo(parent.bottom)
-        })
+
+        if (viewModel.showAdsState) {
+            BannersAds(modifier = Modifier.constrainAs(ads) {
+                linkTo(
+                    start = parent.start,
+                    end = parent.end
+                )
+                bottom.linkTo(parent.bottom)
+            })
+        }
 
     }
 }
@@ -90,7 +96,9 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .padding(vertical = 20.dp)
                 .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
             onClick = {
-                interstitialAd(context, viewModel)
+                if (viewModel.showAdsState) {
+                    interstitialAd(context = context, viewModel = viewModel)
+                }
                 navigateToPanelGame(GameMode.EASY)
             },
             text = {
@@ -123,10 +131,15 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .height(100.dp)
                 .align(Alignment.CenterHorizontally)
                 .padding(vertical = 20.dp)
-                .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
+                .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp))
+                .alpha(checkPremium(viewModel)),
             onClick = {
-                interstitialAd(context, viewModel)
-                navigateToPanelGame(GameMode.MEDIUM)
+                if (viewModel.userType == UserType.PREMIUM) {
+                    if (viewModel.showAdsState) {
+                        interstitialAd(context = context, viewModel = viewModel)
+                    }
+                    navigateToPanelGame(GameMode.MEDIUM)
+                }
             },
             text = {
                 Text(
@@ -158,10 +171,15 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                 .height(100.dp)
                 .align(Alignment.CenterHorizontally)
                 .padding(vertical = 20.dp)
-                .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
+                .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp))
+                .alpha(checkPremium(viewModel)),
             onClick = {
-                interstitialAd(context, viewModel)
-                navigateToPanelGame(GameMode.HARD)
+                if (viewModel.userType == UserType.PREMIUM) {
+                    if (viewModel.showAdsState) {
+                        interstitialAd(context = context, viewModel = viewModel)
+                    }
+                    navigateToPanelGame(GameMode.HARD)
+                }
             },
             text = {
                 Text(
@@ -184,17 +202,25 @@ fun MenuContent(viewModel: MenuViewModel, modifier: Modifier, navigateToPanelGam
                     tint = Color.Yellow
                 )
             },
-            shape = MaterialTheme.shapes.small
+            shape = MaterialTheme.shapes.small,
+            backgroundColor = if (viewModel.userType == UserType.PREMIUM)
+                Color.Black
+            else
+                PressedBlack
         )
     }
 }
 
 fun interstitialAd(context: Context, viewModel: MenuViewModel) {
     InterstitialAdlLoading(context = context)
-    if(mInterstitialAd != null){
+    if (mInterstitialAd != null) {
         InterstitialAdShow(context)
         viewModel.handleEvent(MenuEvent.SetInterstitialAdsLoadingState(false))
     }
+}
+
+fun checkPremium(viewModel: MenuViewModel): Float {
+    return if (viewModel.userType == UserType.PREMIUM) 1f else 0.2f
 }
 
 

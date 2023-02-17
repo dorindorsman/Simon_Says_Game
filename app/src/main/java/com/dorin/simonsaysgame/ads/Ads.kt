@@ -68,6 +68,8 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
                 viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(true))
                 mRewardedAd = rewardedAd
             }
+
+
         })
     }
 
@@ -81,7 +83,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
                     var rewardType = rewardItem.type
                     Log.d("TAG", "User earned the reward.")
                     viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(false))
-                    mRewardedAd = null
+                    //mRewardedAd = null
                 }
                 onUserEarnedReward(it)
             })
@@ -89,6 +91,8 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
         } else {
             Log.d(TAG, "The rewarded ad wasn't ready yet.")
         }
+
+
     }
 
 
