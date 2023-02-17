@@ -58,7 +58,6 @@ fun PanelGameScreen(
         if (viewModel.showAdsState) {
             interstitialAd(context = context, viewModel = viewModel)
         }
-        viewModel.viewState.attemptsLeft = 0
         viewModel.reset()
         navigateToMenuScreen()
     })
@@ -91,7 +90,7 @@ fun SimonSaysGameBoard(
                 .constrainAs(highScore) {
                     top.linkTo(parent.top, margin = 10.dp)
                 }) {
-            if (viewModel.viewState.gameRunning) {
+            if (viewModel.gameRunning) {
                 Text(
                     text = "High Score: ${viewModel.highScore}",
                     fontSize = 20.sp,
@@ -116,18 +115,18 @@ fun SimonSaysGameBoard(
                 .constrainAs(liveScore) {
                     top.linkTo(highScore.bottom, margin = 10.dp)
                 }) {
-            if (!viewModel.viewState.gameRunning) {
+            if (!viewModel.gameRunning) {
                 StartButton(viewModel)
             } else {
                 Text(
-                    text = "Lives: ${viewModel.viewState.attemptsLeft}".also { Log.d("dorin 123 screen",viewModel.viewState.attemptsLeft.toString()) },
+                    text = "Lives: ${viewModel.attemptsLeft}".also { Log.d("dorin 123 screen",viewModel.attemptsLeft.toString()) },
                     fontSize = 20.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.width(30.dp))
                 Text(
-                    text = "Score: ${viewModel.viewState.score}",
+                    text = "Score: ${viewModel.score}",
                     fontSize = 20.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -212,7 +211,7 @@ fun SimonSaysGameBoard(
             )
         }
 
-        if (viewModel.viewState.gameRunning) {
+        if (viewModel.gameRunning) {
             FloatingActionButton(
                 modifier = Modifier
                     .wrapContentSize()
@@ -267,7 +266,7 @@ fun SimonSaysGameBoard(
 
 
         RewardedAdsLoading(context, viewModel)
-        if (viewModel.viewState.attemptsLeft == 0) {
+        if (viewModel.attemptsLeft == 0) {
             when (viewModel.giveRewardState) {
                 RewardState.SHOW -> {
                 }
@@ -294,7 +293,7 @@ fun AlertDialogScreen(
 ) {
     AlertDialog(onDismissRequest = {},
         title = { Text(stringResource(id = R.string.game_completed)) },
-        text = { Text("Your Score: ${viewModel.viewState.score}") },
+        text = { Text("Your Score: ${viewModel.score}") },
         confirmButton = {
             ExtendedFloatingActionButton(text = {
                 Text(
@@ -407,7 +406,7 @@ fun SimonSaysButton(
 
 
     //Logic Variables
-    val pt = viewModel.viewState.playerTurn
+    val pt = viewModel.playerTurn
     var btnColorState = remember { mutableStateOf(color) }
 
 
@@ -422,12 +421,12 @@ fun SimonSaysButton(
         }
     }
 
-    if (viewModel.viewState.btnStates[index] == 1) {
+    if (viewModel.btnStates[index] == 1) {
         btnColorState = remember { mutableStateOf(pressColor) }
-    } else if (viewModel.viewState.btnStates[index] == 2) {
+    } else if (viewModel.btnStates[index] == 2) {
         btnColorState = remember { mutableStateOf(correct) }
         buttonSound = R.raw.victory
-    } else if (viewModel.viewState.btnStates[index] == 3) {
+    } else if (viewModel.btnStates[index] == 3) {
         btnColorState = remember { mutableStateOf(inCorrect) }
         buttonSound = R.raw.error
     }
@@ -463,7 +462,7 @@ fun SimonSaysButton(
                 true
             }, colors = ButtonDefaults.buttonColors(containerColor = btnColorState.value)
     ) {
-        if (btnColorState.value == pressColor || viewModel.viewState.btnStates[index] == 2 || viewModel.viewState.btnStates[index] == 3) {
+        if (btnColorState.value == pressColor || viewModel.btnStates[index] == 2 || viewModel.btnStates[index] == 3) {
             try {
                 mediaPlayer.start()
             } catch (e: Exception) {

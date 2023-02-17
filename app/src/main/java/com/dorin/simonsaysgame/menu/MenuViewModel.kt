@@ -13,7 +13,6 @@ import com.dorin.simonsaysgame.UserType
 import com.dorin.simonsaysgame.datastore.DataStoreRepository
 import com.dorin.simonsaysgame.utils.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject

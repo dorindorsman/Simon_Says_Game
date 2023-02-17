@@ -38,8 +38,8 @@ class PanelGameViewModel @Inject constructor(
     var giveRewardState by mutableStateOf<RewardState>(RewardState.WAIT)
         private set
 
-    var viewState by mutableStateOf(ViewState())
-        private set
+//    var viewState by mutableStateOf(ViewState())
+//        private set
 
     var btnColorState by mutableStateOf(Green)
         private set
@@ -79,12 +79,43 @@ class PanelGameViewModel @Inject constructor(
     var showAdsState by mutableStateOf(true)
         private set
 
+    // color state for squares
+    // 0 - default (color)
+    // 1 - correct (green)
+    // 2 - incorrect (red)
+
+
+    // 0 - default (color)
+    // 1 - press (press)
+    // 2 - correct (green)
+    // 3 - incorrect (red)
+    // have only one non-zero color state at one time ?
+    var btnStates by mutableStateOf(List(4) { 0 })
+        private set
+
+    // current level
+    var score by mutableStateOf(0)
+        private set
+
+    // allow player input if true
+    var playerTurn by mutableStateOf(false)
+        private set
+
+    // remaining number of times player can make errors
+    // game over if reaches 0
+    var attemptsLeft by mutableStateOf(1)
+        private set
+
+    // indicates if the game has started yet
+    var gameRunning by mutableStateOf(false)
+        private set
+
+
     init {
         readEasyState()
         readUserTypeState()
         readUserPurchaseState()
         readUserAdsState()
-
     }
 
     fun handleEvent(event: PanelGameEvent) {
@@ -137,41 +168,41 @@ class PanelGameViewModel @Inject constructor(
     private var sequenceIndex: Int = 0
 
     // Public game state
-    data class ViewState(
-        // color state for squares
-        // 0 - default (color)
-        // 1 - correct (green)
-        // 2 - incorrect (red)
-
-
-        // 0 - default (color)
-        // 1 - press (press)
-        // 2 - correct (green)
-        // 3 - incorrect (red)
-        // have only one non-zero color state at one time ?
-        val btnStates: List<Int> = List(4) { 0 },
-
-        // current level
-        val score: Int = 0,
-
-        // allow player input if true
-        val playerTurn: Boolean = false,
-
-        // remaining number of times player can make errors
-        // game over if reaches 0
-        var attemptsLeft: Int = 1,
-
-        // indicates if the game has started yet
-        var gameRunning: Boolean = false
-
-    )
+//    data class ViewState(
+//        // color state for squares
+//        // 0 - default (color)
+//        // 1 - correct (green)
+//        // 2 - incorrect (red)
+//
+//
+//        // 0 - default (color)
+//        // 1 - press (press)
+//        // 2 - correct (green)
+//        // 3 - incorrect (red)
+//        // have only one non-zero color state at one time ?
+//        val btnStates: List<Int> = List(4) { 0 },
+//
+//        // current level
+//        val score: Int = 0,
+//
+//        // allow player input if true
+//        val playerTurn: Boolean = false,
+//
+//        // remaining number of times player can make errors
+//        // game over if reaches 0
+//        var attemptsLeft : Int = 1,
+//
+//        // indicates if the game has started yet
+//        var gameRunning: Boolean = false
+//
+//    )
 
     /*** Private functions ****/
 
     // emits state for recomposition
-    private fun emit(state: ViewState) {
-        viewState = state
-    }
+//    private fun emit(state: ViewState) {
+//        viewState = state
+//    }
 
     // extends the current sequence with a randomly generated integer
     private fun extendSequence() {
@@ -197,16 +228,8 @@ class PanelGameViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 // disable player input
-                emit(
-                    viewState.copy(
-                        playerTurn = false
-                    )
-                )
-                emit(
-                    viewState.copy(
-                        btnStates = toggleBoard(0)
-                    )
-                )
+                playerTurn = false
+                btnStates = toggleBoard(0)
                 delay(500)
 
                 // start the new round
@@ -220,48 +243,25 @@ class PanelGameViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 // disable player input
-                emit(
-                    viewState.copy(
-                        playerTurn = false
-                    )
-                )
+                playerTurn = false
 
                 // incorrect input indicator
-                emit(
-                    viewState.copy(
-                        btnStates = toggleBoard(3)
-                    )
-                )
+                btnStates = toggleBoard(3)
                 delay(500)
-                emit(
-                    viewState.copy(
-                        btnStates = toggleBoard(0)
-                    )
-                )
+                btnStates = toggleBoard(0)
                 delay(250)
 
                 // animate sequence
                 for (s in sequence) {
                     delay(levelState)
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleButton(s, 1)
-                        )
-                    )
+                    btnStates = toggleButton(s, 1)
                     delay(500)
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleButton(s, 0)
-                        )
-                    )
+                    btnStates = toggleButton(s, 0)
                 }
 
                 // enable player input
-                emit(
-                    viewState.copy(
-                        playerTurn = true
-                    )
-                )
+                playerTurn = true
+
             }
         }
     }
@@ -276,35 +276,20 @@ class PanelGameViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 // disable player input
-                emit(
-                    viewState.copy(
-                        gameRunning = true,
-                        playerTurn = false
-                    )
-                )
+                gameRunning = true
+                playerTurn = false
+
 
                 // animate sequence
                 for (s in sequence) {
                     delay(levelState)
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleButton(s, 1)
-                        )
-                    )
+                    btnStates = toggleButton(s, 1)
                     delay(500)
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleButton(s, 0)
-                        )
-                    )
+                    btnStates = toggleButton(s, 0)
                 }
 
                 // re-enable player input
-                emit(
-                    viewState.copy(
-                        playerTurn = true
-                    )
-                )
+                playerTurn = true
             }
         }
     }
@@ -315,17 +300,13 @@ class PanelGameViewModel @Inject constructor(
     fun receiveInput(id: Int) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                if (viewState.playerTurn) {
+                if (playerTurn) {
                     if (id == sequence[sequenceIndex]) {
                         // correct input
                         if (sequenceIndex == sequence.size - 1) {
                             // end of sequence
-                            emit(
-                                viewState.copy(
-                                    score = viewState.score + 1 ,
-                                    btnStates = toggleBoard(2)
-                                )
-                            )
+                            score++
+                            btnStates = toggleBoard(2)
                             coins += 2
                             delay(3000)
                             newRound()
@@ -336,13 +317,11 @@ class PanelGameViewModel @Inject constructor(
                     } else {
                         // incorrect input
                         sequenceIndex = 0
-                        emit(
-                            viewState.copy(
-                                attemptsLeft = viewState.attemptsLeft - 1,
-                                btnStates = toggleBoard(3)
-                            )
-                        )
-                        if (viewState.attemptsLeft != 0) {
+                        Log.d("dorin 339 model", attemptsLeft.toString())
+                        attemptsLeft--
+                        btnStates = toggleBoard(3)
+
+                        if (attemptsLeft != 0) {
                             replaySequence()
                         } else {
                             // game over
@@ -359,39 +338,27 @@ class PanelGameViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun checkReward() {
-        if (viewState.attemptsLeft == 0) {
+        if (attemptsLeft == 0) {
             when (giveRewardState) {
                 RewardState.SHOW -> {
                     sequenceIndex = 0
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleBoard(0),
-                            playerTurn = false,
-                            attemptsLeft = 1
-                        )
-                    )
+                    btnStates = toggleBoard(0)
+                    playerTurn = false
+                    attemptsLeft = 1
                     while (rewardedAdsLoadingState) {
                     }
                     replaySequence()
                     giveRewardState = RewardState.SHOWED
                 }
                 RewardState.UNSHOW -> {
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleBoard(3),
-                            playerTurn = false
-                        )
-                    )
+                    btnStates = toggleBoard(3)
+                    playerTurn = false
                     setHighScore()
                     persistUserCoinsState(coins)
                 }
                 RewardState.SHOWED -> {
-                    emit(
-                        viewState.copy(
-                            btnStates = toggleBoard(3),
-                            playerTurn = false
-                        )
-                    )
+                    btnStates = toggleBoard(3)
+                    playerTurn = false
                     setHighScore()
                     persistUserCoinsState(coins)
                 }
@@ -408,23 +375,19 @@ class PanelGameViewModel @Inject constructor(
             }
         }
 
-        if(coins >= 15){
+        if (coins >= 15) {
             replaySequence()
-            persistUserCoinsState(coins-15)
+            persistUserCoinsState(coins - 15)
             readUserPurchaseState()
             hintState = coins >= 15
         }
     }
 
     private fun askForLive() {
-        if(coins >= 20){
-            persistUserCoinsState(coins-20)
-            emit(
-                viewState.copy(
-                    attemptsLeft = viewState.attemptsLeft + 1
-                )
-            )
-            Log.d("dorin 427 model", viewState.attemptsLeft.toString())
+        if (coins >= 20) {
+            persistUserCoinsState(coins - 20)
+            attemptsLeft++
+            Log.d("dorin 391 model", attemptsLeft.toString())
             readUserPurchaseState()
         }
     }
@@ -433,9 +396,11 @@ class PanelGameViewModel @Inject constructor(
     fun reset() {
         sequence.clear()
         sequenceIndex = 0
-        emit(
-            ViewState()
-        )
+         btnStates = List(4) { 0 }
+         score = 0
+         playerTurn = false
+         attemptsLeft = 1
+         gameRunning = false
     }
 
     private fun setSound(index: Int) {
@@ -449,18 +414,18 @@ class PanelGameViewModel @Inject constructor(
             }
         }
 
-        if (viewState.btnStates[index] == 2) {
+        if (btnStates[index] == 2) {
             btnColorState = correct
             btnSoundState = R.raw.victory
-        } else if (viewState.btnStates[index] == 3) {
+        } else if (btnStates[index] == 3) {
             btnColorState = inCorrect
             btnSoundState = R.raw.error
         }
     }
 
     private fun setHighScore() {
-        if (viewState.score > highScore) {
-            highScore = viewState.score
+        if (score > highScore) {
+            highScore = score
         }
 
         when (gameModeState) {
@@ -548,20 +513,11 @@ class PanelGameViewModel @Inject constructor(
                         userTypeState.value = RequestState.Success(it)
                         userType = if (RequestState.Success(it).data == 1) {
                             hintState = true
-                            emit(
-                                viewState.copy(
-                                    attemptsLeft = 3
-                                )
-                            )
+                            attemptsLeft = 3
                             UserType.PREMIUM
                         } else {
                             hintState = false
-
-                            emit(
-                                viewState.copy(
-                                    attemptsLeft = 1
-                                )
-                            )
+                            attemptsLeft = 1
                             UserType.NORMAL
                         }
                     }
