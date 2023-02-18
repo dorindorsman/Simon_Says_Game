@@ -99,6 +99,8 @@ class MainActivity : ComponentActivity() {
                                     MenuType.PREMIUM -> PremiumMenu({ menuState = MenuState.HIDE }, {
                                 scope.launch {
                                     DataStoreRepository(context).persistUserTypeState(UserType.PREMIUM.ordinal)
+                                    Toast.makeText(context, "You are now a premium user",Toast.LENGTH_SHORT).show()
+                                    panelGameViewModel.reset()
                                 }
                             })
                             MenuType.PURCHASE -> PurchaseMenu ({ menuState = MenuState.HIDE },
@@ -124,6 +126,7 @@ class MainActivity : ComponentActivity() {
                                     scope.launch {
                                         DataStoreRepository(context).persistUserPurchaseState(PurchaseState.PROGRAM3.ordinal, panelGameViewModel.coins)
                                         Toast.makeText(context, "You made purchase: 60 Coins",Toast.LENGTH_SHORT).show()
+
                                     }
                                 }
 
@@ -131,6 +134,8 @@ class MainActivity : ComponentActivity() {
                             MenuType.UNPREMIUM -> UnPremiumMenu({ menuState = MenuState.HIDE }, {
                                 scope.launch {
                                     DataStoreRepository(context).persistUserTypeState(UserType.NORMAL.ordinal)
+                                    Toast.makeText(context, "You are now a normal user",Toast.LENGTH_SHORT).show()
+                                    panelGameViewModel.reset()
                                 }
                             })
                         }

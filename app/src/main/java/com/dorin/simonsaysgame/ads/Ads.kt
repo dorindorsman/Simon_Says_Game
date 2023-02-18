@@ -2,7 +2,9 @@ package com.dorin.simonsaysgame.ads
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -63,6 +65,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
                 mRewardedAd = null
             }
 
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onAdLoaded(rewardedAd: RewardedAd) {
                 Log.d(TAG, "Ad was loaded.")
                 viewModel.handleEvent(PanelGameEvent.SetRewardedAdsLoadingState(true))
@@ -78,6 +81,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
         if (mRewardedAd != null) {
             mRewardedAd?.show(context as Activity, OnUserEarnedRewardListener {
+                @RequiresApi(Build.VERSION_CODES.O)
                 fun onUserEarnedReward(rewardItem: RewardItem) {
                     var rewardAmount = rewardItem.amount
                     var rewardType = rewardItem.type

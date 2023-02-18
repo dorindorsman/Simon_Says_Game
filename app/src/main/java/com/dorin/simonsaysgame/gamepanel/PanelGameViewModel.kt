@@ -3,9 +3,7 @@ package com.dorin.simonsaysgame.gamepanel
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dorin.simonsaysgame.R
@@ -18,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.random.Random
 
 @HiltViewModel
@@ -37,9 +36,6 @@ class PanelGameViewModel @Inject constructor(
 
     var giveRewardState by mutableStateOf<RewardState>(RewardState.WAIT)
         private set
-
-//    var viewState by mutableStateOf(ViewState())
-//        private set
 
     var btnColorState by mutableStateOf(Green)
         private set
@@ -113,11 +109,11 @@ class PanelGameViewModel @Inject constructor(
 
     init {
         readEasyState()
-        readUserTypeState()
         readUserPurchaseState()
         readUserAdsState()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun handleEvent(event: PanelGameEvent) {
         Log.d(TAG, "game event: $event")
 
@@ -128,6 +124,9 @@ class PanelGameViewModel @Inject constructor(
             is PanelGameEvent.SetButtonColorState -> btnColorState = event.color
             is PanelGameEvent.SetButtonSound -> setSound(event.index)
             is PanelGameEvent.GameModeButtonClicked -> setGameMode(event.gameMode)
+            is PanelGameEvent.ReadUserTypeState -> readUserTypeState()
+            is PanelGameEvent.StartRound -> startRound()
+            is PanelGameEvent.ReceiveInput -> receiveInput(event.index)
             is PanelGameEvent.SetHighScore -> setHighScore()
             is PanelGameEvent.AskForHint -> askForHint()
             is PanelGameEvent.AskForLive -> askForLive()
@@ -167,43 +166,6 @@ class PanelGameViewModel @Inject constructor(
     // current position in sequence
     private var sequenceIndex: Int = 0
 
-    // Public game state
-//    data class ViewState(
-//        // color state for squares
-//        // 0 - default (color)
-//        // 1 - correct (green)
-//        // 2 - incorrect (red)
-//
-//
-//        // 0 - default (color)
-//        // 1 - press (press)
-//        // 2 - correct (green)
-//        // 3 - incorrect (red)
-//        // have only one non-zero color state at one time ?
-//        val btnStates: List<Int> = List(4) { 0 },
-//
-//        // current level
-//        val score: Int = 0,
-//
-//        // allow player input if true
-//        val playerTurn: Boolean = false,
-//
-//        // remaining number of times player can make errors
-//        // game over if reaches 0
-//        var attemptsLeft : Int = 1,
-//
-//        // indicates if the game has started yet
-//        var gameRunning: Boolean = false
-//
-//    )
-
-    /*** Private functions ****/
-
-    // emits state for recomposition
-//    private fun emit(state: ViewState) {
-//        viewState = state
-//    }
-
     // extends the current sequence with a randomly generated integer
     private fun extendSequence() {
         sequence.add(Random.nextInt(0, 3))
@@ -233,8 +195,8 @@ class PanelGameViewModel @Inject constructor(
                 delay(500)
 
                 // start the new round
-                startRound()
             }
+            startRound()
         }
     }
 
@@ -267,7 +229,6 @@ class PanelGameViewModel @Inject constructor(
     }
 
     /*** Public Interface ***/
-
     // starts a new round
     fun startRound() {
         // prepare sequence
@@ -297,11 +258,11 @@ class PanelGameViewModel @Inject constructor(
     // indicates input from button with specified id
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun receiveInput(id: Int) {
+    fun receiveInput(index: Int) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 if (playerTurn) {
-                    if (id == sequence[sequenceIndex]) {
+                    if (index == sequence[sequenceIndex]) {
                         // correct input
                         if (sequenceIndex == sequence.size - 1) {
                             // end of sequence
@@ -314,6 +275,7 @@ class PanelGameViewModel @Inject constructor(
                             // advance sequence
                             sequenceIndex += 1
                         }
+
                     } else {
                         // incorrect input
                         sequenceIndex = 0
@@ -337,7 +299,7 @@ class PanelGameViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun checkReward() {
+    private suspend fun checkReward() {
         if (attemptsLeft == 0) {
             when (giveRewardState) {
                 RewardState.SHOW -> {
@@ -345,8 +307,8 @@ class PanelGameViewModel @Inject constructor(
                     btnStates = toggleBoard(0)
                     playerTurn = false
                     attemptsLeft = 1
-                    while (rewardedAdsLoadingState) {
-                    }
+                    while (rewardedAdsLoadingState) { }
+                    delay(2000)
                     replaySequence()
                     giveRewardState = RewardState.SHOWED
                 }
@@ -383,12 +345,12 @@ class PanelGameViewModel @Inject constructor(
         }
     }
 
+
     private fun askForLive() {
         if (coins >= 20) {
             persistUserCoinsState(coins - 20)
-            attemptsLeft++
-            Log.d("dorin 391 model", attemptsLeft.toString())
             readUserPurchaseState()
+            attemptsLeft++
         }
     }
 
@@ -396,11 +358,11 @@ class PanelGameViewModel @Inject constructor(
     fun reset() {
         sequence.clear()
         sequenceIndex = 0
-         btnStates = List(4) { 0 }
-         score = 0
-         playerTurn = false
-         attemptsLeft = 1
-         gameRunning = false
+        btnStates = List(4) { 0 }
+        score = 0
+        playerTurn = false
+        readUserTypeState()
+        gameRunning = false
     }
 
     private fun setSound(index: Int) {
@@ -527,7 +489,7 @@ class PanelGameViewModel @Inject constructor(
         }
     }
 
-    private fun readUserPurchaseState() {
+    fun readUserPurchaseState() {
         userPurchaseState.value = RequestState.Loading
         try {
             viewModelScope.launch {
@@ -542,7 +504,7 @@ class PanelGameViewModel @Inject constructor(
         }
     }
 
-    private fun persistUserCoinsState(coins: Int) {
+    fun persistUserCoinsState(coins: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.persistUserCoinsState(coins = coins)
         }

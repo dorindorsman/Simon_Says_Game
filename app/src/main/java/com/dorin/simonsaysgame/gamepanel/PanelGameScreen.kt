@@ -10,12 +10,17 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -27,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,11 +59,14 @@ fun PanelGameScreen(
 
     //Define Needed Variables
     val context = LocalContext.current
+    RewardedAdsLoading(context, viewModel)
+
 
     BackHandler(enabled = true, onBack = {
         if (viewModel.showAdsState) {
             interstitialAd(context = context, viewModel = viewModel)
         }
+        //viewModel.attemptsLeft = 0
         viewModel.reset()
         navigateToMenuScreen()
     })
@@ -80,57 +89,104 @@ fun SimonSaysGameBoard(
             .padding(15.dp)
     ) {
 
-        val (highScore, liveScore, btnTop, btnBottom, circle, hint, color, heart, ads) = createRefs()
+        val (score, highScore, liveScore, btnTop, btnBottom, circle, hint, color, heart, ads) = createRefs()
 
-        Row(horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
+        if (!viewModel.gameRunning) {
+            Row(horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .constrainAs(score) {
+                        top.linkTo(parent.top, margin = 10.dp)
+                    }
+            ) {
+                StartButton(viewModel)
+            }
+        } else {
+            Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-                .constrainAs(highScore) {
+                .constrainAs(score) {
                     top.linkTo(parent.top, margin = 10.dp)
                 }) {
-            if (viewModel.gameRunning) {
-                Text(
-                    text = "High Score: ${viewModel.highScore}",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(modifier = Modifier.width(30.dp))
-                Text(
-                    text = "Coins: ${viewModel.coins}",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
+                Column() {
+                    Row(
+                        modifier = Modifier
+                            .wrapContentSize()
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_high_score),
+                            tint = Color.White,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "High Score: ${viewModel.highScore}",
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .wrapContentSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            tint = Color.White,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Score: ${viewModel.score}",
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
-        Row(horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .constrainAs(liveScore) {
-                    top.linkTo(highScore.bottom, margin = 10.dp)
-                }) {
-            if (!viewModel.gameRunning) {
-                StartButton(viewModel)
-            } else {
-                Text(
-                    text = "Lives: ${viewModel.attemptsLeft}".also { Log.d("dorin 123 screen",viewModel.attemptsLeft.toString()) },
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.width(30.dp))
-                Text(
-                    text = "Score: ${viewModel.score}",
-                    fontSize = 20.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
+                Spacer(modifier = Modifier.width(70.dp))
+
+                Column() {
+                    Row(
+                        modifier = Modifier
+                            .wrapContentSize()
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_coins),
+                            tint = Color.White,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Coins: ${viewModel.coins}",
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .wrapContentSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            tint = Color.White,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Lives: ${viewModel.attemptsLeft}",
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
 
@@ -141,7 +197,7 @@ fun SimonSaysGameBoard(
                     start = parent.start,
                     end = parent.end,
                 )
-                top.linkTo(liveScore.top, 120.dp)
+                top.linkTo(score.top, 120.dp)
             }) {
 
 
@@ -240,10 +296,11 @@ fun SimonSaysGameBoard(
                         end.linkTo(hint.start, 25.dp)
                     }
                     .size(50.dp)
-                    .alpha(checkCoins(viewModel, 20)),
+                    .alpha(checkCoins(viewModel)),
                 shape = RoundedCornerShape(150.dp),
                 onClick = {
                     viewModel.handleEvent(PanelGameEvent.AskForLive)
+                    Log.d("dorin 255 screen", viewModel.attemptsLeft.toString())
                 },
                 backgroundColor = Color.Black,
             ) {
@@ -265,7 +322,6 @@ fun SimonSaysGameBoard(
         }
 
 
-        RewardedAdsLoading(context, viewModel)
         if (viewModel.attemptsLeft == 0) {
             when (viewModel.giveRewardState) {
                 RewardState.SHOW -> {
@@ -356,6 +412,7 @@ fun RewardAlertDialogScreen(
         })
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun StartButton(viewModel: PanelGameViewModel) {
     ExtendedFloatingActionButton(
@@ -366,7 +423,8 @@ fun StartButton(viewModel: PanelGameViewModel) {
             .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(16.dp)),
         onClick = {
             viewModel.handleEvent(PanelGameEvent.SetGiveRewardState(RewardState.WAIT))
-            viewModel.startRound()
+            viewModel.handleEvent(PanelGameEvent.ReadUserTypeState)
+            viewModel.handleEvent(PanelGameEvent.StartRound)
         },
         text = {
             Text(
@@ -445,17 +503,13 @@ fun SimonSaysButton(
                         if (pt) {
                             selected.value = true
                             btnColorState.value = pressColor
-                            //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
-                            //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(pressColor))
                         }
                     }
                     MotionEvent.ACTION_UP -> {
                         if (pt) {
                             selected.value = false
                             btnColorState.value = color
-                            viewModel.receiveInput(index)
-                            //viewModel.handleEvent(PanelGameEvent.SetButtonSound(index))
-                            //viewModel.handleEvent(PanelGameEvent.SetButtonColorState(color))
+                            viewModel.handleEvent(PanelGameEvent.ReceiveInput(index))
                         }
                     }
                 }
@@ -472,6 +526,7 @@ fun SimonSaysButton(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun interstitialAd(context: Context, viewModel: PanelGameViewModel) {
     InterstitialAdlLoading(context = context)
     if (mInterstitialAd != null) {
@@ -487,14 +542,14 @@ fun checkCoinsAndPremium(viewModel: PanelGameViewModel): Float {
         }
     }
     if (viewModel.coins >= 15) {
-            return 1f
+        return 1f
     }
     return 0.2f
 }
 
-fun checkCoins(viewModel: PanelGameViewModel, amount: Int): Float {
-    if (viewModel.coins >= amount) {
-            return 1f
+fun checkCoins(viewModel: PanelGameViewModel): Float {
+    if (viewModel.coins >= 20) {
+        return 1f
 
     }
     return 0.2f
