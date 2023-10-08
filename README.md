@@ -3,6 +3,8 @@
 <h3 align="center">Android App</h3>
 <h1 align="center">Welcome To SIMON SAYS GAME!</h1>
 
+https://github.com/dorindorsman/Simon_Says_Game/assets/62396222/e0d3bde8-08ef-4a1f-9579-4e905d9053c1
+
 
 ## :information_source: About 
 
@@ -21,6 +23,7 @@ The game starts when the console lights up any button.
 The player has to press the button that the console showed him, with each additional turn adding another color (another button).
 It is a form of learning through imitation.
 The game ends when the player makes a mistake and presses a button that did not appear in the sequence, or when he succeeds in repeating the longest sequence defined.
+
 
 ## :link: Menu:
 
